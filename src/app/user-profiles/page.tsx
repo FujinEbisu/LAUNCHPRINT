@@ -31,6 +31,7 @@ interface SubscriptionStatus {
 }
 
 export default function UserProfilePage() {
+  type Question = { label: string; name: string; bullets?: string[] };
   const user = useUser();
   const router = useRouter();
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
@@ -39,8 +40,16 @@ export default function UserProfilePage() {
   const [showStrategyModal, setShowStrategyModal] = useState(false);
   const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
   const [isCancellingSubscription, setIsCancellingSubscription] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const [strategyUsage, setStrategyUsage] = useState({ used: 0, limit: 0 });
+  const [openHintIndex, setOpenHintIndex] = useState<number | null>(null);
   const [strategyForm, setStrategyForm] = useState({
+    // Core Four Qs
+    who: '',
+    what: '',
+    when: '',
+    how: '',
+    // Legacy fields kept for backend compatibility (unused in UI but posted as part of payload)
     problem: '',
     productSimple: '',
     b2bOrB2c: '',
@@ -63,55 +72,58 @@ export default function UserProfilePage() {
     discovery: '',
   });
 
-  const questions = [
-    // The Basics About Your Business
-    { label: "What problem does your product solve for customers?", name: "problem" },
-    { label: "What's your product/service in simple terms?", name: "productSimple" },
-    { label: "Are you B2B (selling to businesses) or B2C (selling to consumers)?", name: "b2bOrB2c" },
-    // Where You Stand
-    { label: "Is this a new launch or existing product?", name: "launchOrExisting" },
-    { label: "What's your monthly revenue range (if any)?", name: "revenueRange" },
-    { label: "How many customers do you currently have?", name: "customerCount" },
-    // Your Customers
-    { label: "Who is your ideal customer?", name: "idealCustomer" },
-    { label: "What industry/type of business do they run?", name: "customerIndustry" },
-    { label: "How big are these companies (employees/revenue)?", name: "companySize" },
-    { label: "What's their biggest challenge that you solve?", name: "customerChallenge" },
-    { label: "How do they currently handle this problem without you?", name: "currentSolution" },
-    // Your Goals
-    { label: "What do you want to achieve in the next 6 months?", name: "goal6mo" },
-    { label: "Is it more customers, higher revenue, or brand awareness?", name: "goalType" },
-    { label: "What would make you feel this marketing effort was worth it?", name: "successCriteria" },
-    // Your Resources
-    { label: "What's your monthly marketing budget?", name: "marketingBudget" },
-    { label: "How much time can you personally dedicate to marketing?", name: "marketingTime" },
-    { label: "Do you have any marketing materials already (logo, website, etc.)?", name: "marketingMaterials" },
-    // Competition & Market
-    { label: "Who are your main competitors?", name: "competitors" },
-    { label: "What makes you different from them?", name: "differentiation" },
-    { label: "How do customers currently find solutions like yours?", name: "discovery" },
+  // Four Core Questions with guidance bullets for info bubble
+  const coreQuestions: Question[] = [
+    {
+      label: 'Who is your ideal customer and what do they truly need?',
+      name: 'who',
+      bullets: [
+        'Pain points and daily challenges',
+        'Behavior and decision process',
+        'Preferred channels and content habits',
+        'Buying triggers and motivations',
+        'Objections and concerns preventing conversion',
+      ],
+    },
+    {
+      label: 'What value proposition will compel them to act?',
+      name: 'what',
+      bullets: [
+        'Specific transformation you deliver',
+        'How you solve top problems better than alternatives',
+        'Tangible post-purchase benefits',
+        'Social proof and credibility signals',
+        'Risk reversal (guarantees, trials)',
+      ],
+    },
+    {
+      label: 'When is the optimal time to reach them and what triggers action?',
+      name: 'when',
+      bullets: [
+        'Stage of buying journey (awareness, consideration, decision)',
+        'Seasonality and market conditions',
+        'Trigger events creating urgency',
+        'Follow-up sequences and nurturing timelines',
+        'Touchpoint frequency that keeps you top-of-mind',
+      ],
+    },
+    {
+      label: 'How will you systematically guide them through each conversion step?',
+      name: 'how',
+      bullets: [
+        'Map each stage from awareness to purchase and beyond',
+        'Content and touchpoints needed at every step',
+        'Conversion mechanisms (LPs, email, retargeting, etc.)',
+        'Friction points causing abandonment',
+        'Measurement systems to track and optimize',
+      ],
+    },
   ];
 
-  // Free Tier Questions (Minimal - 3 questions)
-  const freeQuestions = [
-    { label: "What problem does your product solve for customers?", name: "problem" },
-    { label: "Who is your ideal customer?", name: "idealCustomer" },
-    { label: "What's your monthly marketing budget?", name: "marketingBudget" },
-  ];
-
-  // Starter Tier Questions (Essential - 7 questions)
-  const starterQuestions = [
-    { label: "What problem does your product solve for customers?", name: "problem" },
-    { label: "What's your product/service in simple terms?", name: "productSimple" },
-    { label: "Who is your ideal customer?", name: "idealCustomer" },
-    { label: "What do you want to achieve in the next 6 months?", name: "goal6mo" },
-    { label: "What's your monthly marketing budget?", name: "marketingBudget" },
-    { label: "Who are your main competitors?", name: "competitors" },
-    { label: "What makes you different from them?", name: "differentiation" },
-  ];
-
-  // Pro Tier Questions (Full - 20 questions)
-  const proQuestions = questions; // Use the full comprehensive set
+  // Use the same Four Core Questions across tiers for a focused, high-signal brief
+  const freeQuestions: Question[] = coreQuestions;
+  const starterQuestions: Question[] = coreQuestions;
+  const proQuestions: Question[] = coreQuestions;
 
   const getCurrentQuestions = () => {
     if (!subscriptionStatus) return freeQuestions;
@@ -144,18 +156,7 @@ export default function UserProfilePage() {
   };
 
   const getModalSubtitle = () => {
-    if (!subscriptionStatus) return 'Answer a few questions to get started';
-
-    switch (subscriptionStatus.currentTier) {
-      case 'free':
-        return 'Answer 3 essential questions to get your basic strategy';
-      case 'starter':
-        return 'Answer 7 detailed questions for an enhanced strategy';
-      case 'pro':
-        return 'Answer 20 comprehensive questions for a complete strategy analysis';
-      default:
-        return 'Answer a few questions to get started';
-    }
+    return 'Answer the Four Core Questions to generate your strategy';
   };
 
   const getTierLabel = () => {
@@ -164,11 +165,19 @@ export default function UserProfilePage() {
   };
 
   const handleLogout = async () => {
+    setIsSigningOut(true);
     try {
-      // Stack Auth logout - redirect to sign out handler
+      // Show loader, then redirect to sign out handler
+      await new Promise(resolve => setTimeout(resolve, 1200)); // Simulate network delay for UX
       window.location.href = '/handler/sign-out';
+      // If sign out handler returns, fallback to home
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 3000);
     } catch (error) {
+      setIsSigningOut(false);
       console.error('Logout error:', error);
+      window.location.href = '/';
     }
   };
 
@@ -213,7 +222,7 @@ export default function UserProfilePage() {
     setStrategyForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-/* THIS IS THE LOGIC IN CHARGE TO REDIRECT THE FORM TO EACH CORRESPONDING API/PERPLEX-"TIER" */
+  /* THIS IS THE LOGIC IN CHARGE TO REDIRECT THE FORM TO EACH CORRESPONDING API/PERPLEX-"TIER" */
   const getPerplexApiEndpoint = () => {
     if (subscriptionStatus?.currentTier === 'starter') {
       return '/api/perplex-starter';
@@ -229,18 +238,16 @@ export default function UserProfilePage() {
     setShowStrategyModal(false);
     setIsGeneratingStrategy(true);
 
-
-
     try {
       // uncomment when you have the endpoint logic down
       const endpoint = getPerplexApiEndpoint();
 
       // un comment when you have the endpoint logic down
       const response = await fetch(endpoint, {
-      // THIS IS IN CHARGE OF SENDING THE STRATEGY TO THE API/PERPLEX-TEST
-      // remove when you have the endpoint logic down
-      //const response = await fetch('/api/perplex-test', {
-      // THIS IS IN CHARGE OF SENDING THE STRATEGY TO THE API/PERPLEX-TEST
+        // THIS IS IN CHARGE OF SENDING THE STRATEGY TO THE API/PERPLEX-TEST
+        // remove when you have the endpoint logic down
+        //const response = await fetch('/api/perplex-test', {
+        // THIS IS IN CHARGE OF SENDING THE STRATEGY TO THE API/PERPLEX-TEST
 
         method: 'POST',
         headers: {
@@ -253,32 +260,36 @@ export default function UserProfilePage() {
 
       if (data.success) {
         // Record the successful strategy generation
-        await fetch('/api/strategy-usage', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: user?.id,
-            problem: strategyForm.problem,
-            strategy: data.strategy
-          })
-        });
+        try {
+          await fetch('/api/strategy-usage', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: user?.id,
+              problem: strategyForm.problem || 'Strategy generated',
+              strategy: data.strategy,
+              tier: subscriptionStatus?.currentTier // <-- Added tier
+            })
+          });
 
-        // Refresh usage data
-        const usageRes = await fetch(`/api/strategy-usage?userId=${user?.id}`);
-        const usageData = await usageRes.json();
-        if (usageRes.ok) {
-          setStrategyUsage(usageData);
+          // Refresh usage data
+          const usageRes = await fetch(`/api/strategy-usage?userId=${user?.id}`);
+          const usageData = await usageRes.json();
+          if (usageRes.ok) {
+            setStrategyUsage(usageData);
+          }
+        } catch (usageError) {
+          console.error('Error recording strategy usage:', usageError);
+          // Continue anyway - don't block the user
         }
 
-        // Strategy generated successfully - redirect to chat room
-        const params = new URLSearchParams({
-          strategy: data.strategy,
-          formData: JSON.stringify(strategyForm)
-        });
+        // Strategy generated successfully - store data in localStorage and redirect
+        localStorage.setItem('generatedStrategy', data.strategy);
+        localStorage.setItem('strategyFormData', JSON.stringify(strategyForm));
 
-        router.push(`/chat-rooms/general-help?${params.toString()}`);
+        router.push('/chat-rooms/general-help');
       } else {
         // Handle error - don't count usage
         setIsGeneratingStrategy(false);
@@ -303,49 +314,58 @@ export default function UserProfilePage() {
   };
 
   useEffect(() => {
-    const fetchStrategyUsage = async () => {
-      try {
-        const res = await fetch(`/api/strategy-usage?userId=${user?.id}`);
-        const data = await res.json();
-        if (res.ok) {
-          setStrategyUsage(data);
-        }
-      } catch (error) {
-        console.error('Error fetching strategy usage:', error);
-      }
-    };
+    let mounted = true;
 
-    async function fetchSubscriptionStatus() {
+    const fetchData = async () => {
       if (!user || !user.id) {
         router.push('/');
         return;
       }
 
       try {
-        const res = await fetch(`/api/subscription-status?userId=${user.id}`);
-        const data = await res.json();
+        // Fetch both subscription status and strategy usage in parallel
+        const [subscriptionRes, strategyUsageRes] = await Promise.all([
+          fetch(`/api/subscription-status?userId=${user.id}`),
+          fetch(`/api/strategy-usage?userId=${user.id}`)
+        ]);
 
-        if (res.ok && data.subscriptionStatus) {
-          setSubscriptionStatus(data.subscriptionStatus);
-          // Fetch strategy usage once we have subscription status
-          await fetchStrategyUsage();
+        if (!mounted) return; // Component unmounted, don't update state
+
+        const [subscriptionData, strategyData] = await Promise.all([
+          subscriptionRes.json(),
+          strategyUsageRes.json()
+        ]);
+
+        if (subscriptionRes.ok && subscriptionData.subscriptionStatus) {
+          setSubscriptionStatus(subscriptionData.subscriptionStatus);
         } else {
-          setError(data.error || 'Failed to load subscription status');
+          setError(subscriptionData.error || 'Failed to load subscription status');
         }
-      } catch (err) {
-        setError('Failed to load subscription status');
-        console.error('Error fetching subscription status:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
 
-    fetchSubscriptionStatus();
+        if (strategyUsageRes.ok) {
+          setStrategyUsage(strategyData);
+        }
+
+      } catch (err) {
+        if (mounted) {
+          setError('Failed to load data');
+          console.error('Error fetching data:', err);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      mounted = false;
+    };
   }, [user, router]);
 
-
-
-  if (loading) {
+  if (loading || isSigningOut) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">
         <div className="text-center">
@@ -361,7 +381,9 @@ export default function UserProfilePage() {
               />
             ))}
           </div>
-          <p className="text-[var(--primary)] font-medium">Loading your profile...</p>
+          <p className="text-[var(--primary)] font-medium">
+            {isSigningOut ? 'Signing you out...' : 'Loading your profile...'}
+          </p>
         </div>
       </div>
     );
@@ -387,123 +409,113 @@ export default function UserProfilePage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-white">
       <div className="w-full max-w-6xl mx-auto p-6">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-[var(--primary)] mb-4">
-            Welcome Back!
-          </h1>
-          <p className="text-xl text-[var(--primary)] mb-4">
-            {user?.displayName || user?.primaryEmail}
-          </p>
-          <div className="inline-flex items-center gap-2 mb-6">
-            <div className="px-4 py-2 bg-[var(--primary)] text-white font-bold text-lg shadow-hard">
-              {subscriptionStatus.tierInfo?.name?.toUpperCase()}
-            <span className="text-[var(--secondary)] font-bold"> Plan </span>
-            </div>
+        <div className="mb-4">
+          {/* Welcome Section */}
+          <div className="text-center mb-10">
+            <h1 className="text-3xl md:text-4xl font-bold text-[var(--primary)] mb-3">
+              Welcome Back!
+            </h1>
+            <p className="text-base text-[var(--primary)] mb-6">
+              {user?.displayName || user?.primaryEmail}
+            </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button
-              className="btn-square-accent"
-              onClick={() => router.push('/pricing')}
-            >
-              Upgrade Plan
-            </button>
-            {subscriptionStatus?.hasPaidSubscription && (
-              <button
-                className="btn-square bg-[var(--primary)] hover:bg-[var(--primary)] border-[var(--primary)] text-[var(--secondary)] disabled:opacity-50"
-                onClick={handleCancelSubscription}
-                disabled={isCancellingSubscription}
-              >
-                {isCancellingSubscription ? 'Cancelling...' : 'Cancel Subscription'}
-              </button>
+        </div>
+
+        {/* Access Areas */}
+        <div className="text-center">
+          {/* Buttons Container */}
+          <div className="mb-8">
+            {subscriptionStatus.currentTier !== 'free' ? (
+              /* Paid Users: Two buttons side by side */
+              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                {/* Create New Strategy Button */}
+                <div className="text-center">
+                  <button
+                    className={`btn-square-accent text-xl px-8 py-4 ${
+                      !canCreateStrategy() ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                    onClick={() => setShowStrategyModal(true)}
+                    disabled={!canCreateStrategy()}
+                  >
+                    {getButtonText()}
+                  </button>
+                  <p className="text-black mt-2 text-sm">
+                    Resets monthly • All strategies saved to your account
+                  </p>
+                </div>
+
+                {/* View All Strategies Button */}
+                <div className="text-center">
+                  <button
+                    className="btn-square text-xl px-8 py-4"
+                    onClick={() => router.push('/user-profiles/strategies')}
+                  >
+                    View All My Strategies
+                  </button>
+                  <p className="text-black mt-2 text-sm">
+                    Access your complete strategy library
+                  </p>
+                </div>
+              </div>
+            ) : (
+              /* Free Users: Single button centered */
+              <div className="text-center">
+                <button
+                  className={`btn-square-accent text-xl px-8 py-4 ${
+                    !canCreateStrategy() ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  onClick={() => setShowStrategyModal(true)}
+                  disabled={!canCreateStrategy()}
+                >
+                  {getButtonText()}
+                </button>
+              </div>
             )}
-            <button
-              className="btn-square text-sm"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
           </div>
         </div>
 
         {/* Tier Features Card */}
         {subscriptionStatus.tierInfo && (
           <div className="card-square p-8 mb-8 max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-[var(--secondary)] mb-6 text-center">Your Plan Features</h2>
+            <h2 className="text-2xl font-bold text-text-[var(--primary)] mb-6 text-center">Your Plan Features</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
-                <p className="text-[var(--secondary)] font-medium mb-2">Monthly Strategies</p>
-                <div className="text-4xl font-bold text-[var(--secondary)] mb-2">
+                <p className="text-text-[var(--primary)] font-medium mb-2">Monthly Strategies</p>
+                <div className="text-4xl font-bold text-text-[var(--primary)] mb-2">
                   {subscriptionStatus.tierInfo.monthlyStrategies === 75 ? '75' : subscriptionStatus.tierInfo.monthlyStrategies}
                 </div>
-                <div className="w-full h-2 bg-[var(--secondary)]"></div>
+                <div className="w-full h-2 bg-text-[var(--primary)]"></div>
               </div>
               <div className="text-center">
-                <p className="text-[var(--secondary)] font-medium mb-2">Data Storage</p>
-                <div className="text-4xl font-bold text-[var(--secondary)] mb-2">
+                <p className="text-text-[var(--primary)] font-medium mb-2">Data Storage</p>
+                <div className="text-4xl font-bold text-text-[var(--primary)] mb-2">
                   {subscriptionStatus.tierInfo.canSaveData ? 'UNLIMITED' : 'NONE'}
                 </div>
-                <div className="w-full h-2 bg-[var(--secondary)]"></div>
+                <div className="w-full h-2 bg-text-[var(--primary)]"></div>
               </div>
               <div className="text-center">
-                <p className="text-[var(--secondary)] font-medium mb-2">Support Level</p>
-                <div className="text-4xl font-bold text-[var(--secondary)] mb-2 uppercase">
+                <p className="text-text-[var(--primary)] font-medium mb-2">Support Level</p>
+                <div className="text-4xl font-bold text-text-[var(--primary)] mb-2 uppercase">
                   {subscriptionStatus.tierInfo.supportLevel}
                 </div>
-                <div className="w-full h-2 bg-[var(--secondary)]"></div>
+                <div className="w-full h-2 bg-text-[var(--primary)]"></div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Access Areas */}
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-[var(--primary)] mb-6 text-center">New Strategy ?</h2>
-            {/* Create New Strategy Button */}
-            <div className="mb-8">
-              <button
-                className={`btn-square-accent text-xl px-8 py-4 ${
-                  !canCreateStrategy() ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-                onClick={() => setShowStrategyModal(true)}
-                disabled={!canCreateStrategy()}
-              >
-                {getButtonText()}
-              </button>
-              {subscriptionStatus.currentTier !== 'free' && (
-                <p className="text-black mt-2 text-sm">
-                  Resets monthly • All strategies saved to your account
-                </p>
-              )}
-            </div>
-
-            {/* View All Strategies Button for Paid Users */}
-            {subscriptionStatus.currentTier !== 'free' && (
-              <div className="mb-8">
-                <button
-                  className="btn-square text-lg px-6 py-3"
-                  onClick={() => router.push('/user-profiles/strategies')}
-                >
-                  View All My Strategies
-                </button>
-                <p className="text-black mt-2 text-sm">
-                  Access your complete strategy library
-                </p>
-              </div>
-            )}
-          </div>
-
         {/* Upgrade Prompt for Free/Starter Users */}
         {subscriptionStatus.currentTier !== 'pro' && (
           <div className="card-square p-8 mt-8 max-w-4xl mx-auto">
             <div className="text-center">
-              <h3 className="text-2xl font-bold text-[var(--secondary)] mb-4">
+              <h3 className="text-2xl font-bold text-text-[var(--primary)] mb-4">
                 Unlock More Features
               </h3>
-              <p className="text-[var(--secondary)] mb-6">
+              <p className="text-text-[var(--primary)] mb-6">
                 Upgrade to access more areas, advanced strategies, and priority support.
               </p>
               <button
-                className="btn-square-accent text-xl px-8 py-4"
+                className="btn-square text-xl px-8 py-4"
                 onClick={() => router.push('/pricing')}
               >
                 View Pricing Plans
@@ -554,7 +566,7 @@ export default function UserProfilePage() {
                   subscriptionStatus?.currentTier === 'starter' ? 'grid grid-cols-1 md:grid-cols-2' :
                   'grid grid-cols-1'
                 }`}>
-                  {getCurrentQuestions().map((question, index) => (
+                  {getCurrentQuestions().map((question: Question, index) => (
                     <div key={index} className={`mb-4 ${
                       subscriptionStatus?.currentTier === 'free' ? 'col-span-1' : ''
                     }`}>
@@ -563,17 +575,39 @@ export default function UserProfilePage() {
                           {index + 1}.
                         </span>
                         {question.label}
+                        {question.bullets && (
+                          <span className="relative inline-block ml-2 align-middle group">
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-[var(--primary)] text-[var(--primary)] font-bold text-xs cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-[var(--accent2)]"
+                              aria-label="More info"
+                              aria-expanded={openHintIndex === index}
+                              aria-controls={`qtip-${index}`}
+                              onClick={() => setOpenHintIndex(openHintIndex === index ? null : index)}
+                            >
+                              ?
+                            </button>
+                            <span
+                              id={`qtip-${index}`}
+                              role="tooltip"
+                              className={`absolute z-50 ${openHintIndex === index ? 'block' : 'hidden'} md:group-hover:block bg-white border-2 border-black p-3 shadow-hard w-72 max-w-[90vw] left-1/2 -translate-x-1/2 mt-2`}
+                            >
+                              <ul className="list-disc pl-5 text-sm text-black">
+                                {question.bullets.map((b: string, i: number) => (
+                                  <li key={i}>{b}</li>
+                                ))}
+                              </ul>
+                            </span>
+                          </span>
+                        )}
                       </label>
                       <textarea
                         name={question.name}
                         value={strategyForm[question.name as keyof typeof strategyForm]}
                         onChange={handleStrategyFormChange}
                         className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] resize-none"
-                        rows={subscriptionStatus?.currentTier === 'pro' ? 3 : 2}
-                        placeholder={
-                          subscriptionStatus?.currentTier === 'pro' ? 'Provide detailed information...' :
-                          subscriptionStatus?.currentTier === 'starter' ? 'Your answer...' : 'Brief answer...'
-                        }
+                        rows={3}
+                        placeholder={'Provide detailed information...'}
                         required
                       />
                     </div>
@@ -613,6 +647,38 @@ export default function UserProfilePage() {
           </div>
         </div>
       )}
+
+       {/* Account Actions - Full Width Row Layout */}
+          <div className="max-w-4xl mb-2 mx-auto grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-6">
+            {/* Plan Badge - Now Full Width Button */}
+            <div className="w-full btn-square font-bold text-sm text-center">
+              {subscriptionStatus.tierInfo?.name?.toUpperCase()} PLAN
+            </div>
+
+            <button
+              className="w-full btn-square text-sm"
+              onClick={() => router.push('/pricing')}
+            >
+              Upgrade Plan
+            </button>
+
+            {subscriptionStatus?.hasPaidSubscription && (
+              <button
+                className="w-full btn-square text-sm"
+                onClick={handleCancelSubscription}
+                disabled={isCancellingSubscription}
+              >
+                {isCancellingSubscription ? 'Cancelling...' : 'Cancel Subscription'}
+              </button>
+            )}
+
+            <button
+              className="w-full btn-square text-sm"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          </div>
 
       {/* Loading State for Strategy Generation */}
       {isGeneratingStrategy && (

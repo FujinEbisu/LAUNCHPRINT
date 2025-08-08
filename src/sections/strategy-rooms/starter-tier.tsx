@@ -28,29 +28,29 @@ export default function StarterDisplay({ initialStrategy, strategyId }: StarterD
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-white p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
         <div className="card-square p-6 min-h-[80vh] flex flex-col">
-          <div className="flex justify-between items-center mb-4 pb-4 border-b-2 border-black">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 pb-4 border-b-2 border-black gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-black">Your Marketing Strategy</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-black">Your Marketing Strategy</h1>
               <p className="text-sm text-muted-foreground">Comprehensive strategy with actionable insights</p>
               {strategyId && (
                 <p className="text-xs text-gray-500 mt-1">Strategy ID: {strategyId}</p>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               {initialStrategy && (
                 <>
                   <button
                     onClick={copyToClipboard}
-                    className="btn-square"
+                    className="btn-square w-full sm:w-auto"
                   >
                     Copy
                   </button>
                   <button
                     onClick={downloadStrategy}
-                    className="btn-square"
+                    className="btn-square w-full sm:w-auto"
                   >
                     Download
                   </button>

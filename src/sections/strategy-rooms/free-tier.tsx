@@ -20,15 +20,15 @@ export default function FreeTierDisplay({ formData, initialStrategy, initialErro
   };
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-white p-4 sm:p-6">
       <div className="max-w-4xl mx-auto">
         <div className="card-square p-6 min-h-[70vh] flex flex-col">
-          <div className="flex justify-between items-center mb-4 pb-4 border-b-2 border-black">
-            <h1 className="text-2xl font-bold text-[var(--secondary)]">Your Marketing Strategy</h1>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 pb-4 border-b-2 border-black gap-4">
+            <h1 className="text-xl sm:text-2xl font-bold text-[var(--secondary)]">Your Marketing Strategy</h1>
             {initialStrategy && (
               <button
                 onClick={copyToClipboard}
-                className="btn-square"
+                className="btn-square w-full sm:w-auto"
               >
                 Copy Strategy
               </button>

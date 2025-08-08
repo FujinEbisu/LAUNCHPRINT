@@ -91,7 +91,7 @@ export default function UserStrategiesPage() {
       <div className="min-h-screen bg-white p-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center py-20">
-            <h2 className="text-2xl font-bold text-[var(--secondary)]">Loading your strategies...</h2>
+            <h2 className="text-2xl font-bold text-[var(--primary)]">Loading your strategies...</h2>
           </div>
         </div>
       </div>
@@ -99,19 +99,19 @@ export default function UserStrategiesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-white p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-[var(--secondary)]">Your Marketing Strategies</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--primary)]">Your Marketing Strategies</h1>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">
               All your saved marketing strategies in one place
             </p>
           </div>
           <button
             onClick={() => router.push('/user-profiles')}
-            className="btn-square"
+            className="btn-square w-full sm:w-auto"
           >
             Back to Profile
           </button>
@@ -124,7 +124,7 @@ export default function UserStrategiesPage() {
         )}
 
         {strategies.length === 0 && !error ? (
-          <div className="card-square p-12 text-center">
+          <div className="card-square p-6 sm:p-12 text-center">
             <h3 className="text-xl font-bold text-[var(--secondary)] mb-4">No strategies yet</h3>
             <p className="text-muted-foreground mb-6">
               You haven&apos;t created any marketing strategies yet. Start by generating your first strategy!
@@ -142,14 +142,14 @@ export default function UserStrategiesPage() {
               <div key={strategy.id} className="card-square p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-[var(--secondary)] mb-2">
+                    <h3 className="text-lg font-bold text-[var(--primary)] mb-2">
                       Strategy #{strategy.id}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-3">
                       Created: {formatDate(strategy.createdAt)}
                     </p>
                     <div className="bg-gray-50 p-4 rounded border-2 border-black mb-4">
-                      <p className="text-sm font-semibold text-[var(--secondary)] mb-1">Problem:</p>
+                      <p className="text-sm font-semibold text-[var(--primary)] mb-1">Problem:</p>
                       <p className="text-sm text-gray-700">
                         {truncateText(strategy.problem, 200)}
                       </p>
@@ -158,30 +158,30 @@ export default function UserStrategiesPage() {
                 </div>
 
                 <div className="mb-4">
-                  <p className="text-sm font-semibold text-[var(--secondary)] mb-2">Strategy Preview:</p>
+                  <p className="text-sm font-semibold text-[var(--primary)] mb-2">Strategy Preview:</p>
                   <div className="bg-muted p-4 border-2 border-black rounded">
-                    <pre className="text-xs font-mono whitespace-pre-wrap text-gray-800">
+                    <pre className="text-xs font-mono whitespace-pre-wrap text-[var(--primary)]">
                       {truncateText(strategy.strategy, 300)}
                     </pre>
                   </div>
                 </div>
 
-                <div className="flex gap-2 justify-end">
+                <div className="flex flex-col sm:flex-row gap-2 justify-end">
                   <button
                     onClick={() => handleViewStrategy(strategy.id)}
-                    className="btn-square text-sm"
+                    className="btn-square text-sm w-full sm:w-auto"
                   >
                     View Full Strategy
                   </button>
                   <button
                     onClick={() => copyToClipboard(strategy.strategy)}
-                    className="btn-square text-sm"
+                    className="btn-square text-sm w-full sm:w-auto"
                   >
                     Copy
                   </button>
                   <button
                     onClick={() => downloadStrategy(strategy)}
-                    className="btn-square text-sm"
+                    className="btn-square text-sm w-full sm:w-auto"
                   >
                     Download
                   </button>

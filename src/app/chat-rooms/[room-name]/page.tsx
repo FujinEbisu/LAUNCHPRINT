@@ -146,9 +146,23 @@ export default function ChatRoomPage() {
   // Determine which chat component to render based on tier
   const renderChatComponent = () => {
     const currentTier = subscriptionStatus?.currentTier;
-    const formData = {
+
+    // Get strategy data from localStorage
+    const generatedStrategy = localStorage.getItem('generatedStrategy') || '';
+    const storedFormData = localStorage.getItem('strategyFormData');
+
+    let formData = {
       problem: `I'm in the ${getChatRoomDisplayName(roomName)} and need assistance.`
     };
+
+    // If we have stored form data, use it
+    if (storedFormData) {
+      try {
+        formData = JSON.parse(storedFormData);
+      } catch (error) {
+        console.error('Error parsing stored form data:', error);
+      }
+    }
 
     // Add plan tier display to the top
     const PlanTierBadge = () => (
@@ -173,7 +187,7 @@ export default function ChatRoomPage() {
         <div className="min-h-screen bg-white">
           <div className="w-full max-w-6xl mx-auto p-6">
             <PlanTierBadge />
-            <FreeTierChat formData={formData} initialStrategy="" />
+            <FreeTierChat formData={formData} initialStrategy={generatedStrategy} />
           </div>
         </div>
       );
@@ -183,7 +197,7 @@ export default function ChatRoomPage() {
         <div className="min-h-screen bg-white">
           <div className="w-full max-w-6xl mx-auto p-6">
             <PlanTierBadge />
-            <CustomerChat formData={formData} />
+            <CustomerChat formData={formData} initialStrategy={generatedStrategy} />
           </div>
         </div>
       );

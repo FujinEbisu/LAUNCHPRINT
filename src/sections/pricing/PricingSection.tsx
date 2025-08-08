@@ -7,7 +7,6 @@ import { useUser } from '@stackframe/stack'
 
 interface PricingSectionProps {
   customerId?: string
-  userId?: string
 }
 
 interface StripeProduct {
@@ -20,33 +19,61 @@ interface StripeProduct {
   marketing_features?: Array<string | { name: string }>;
 }
 
-interface StripePrice {
-  id: string;
-  unit_amount: number;
-  recurring?: {
-    interval: string;
-  };
-  product: StripeProduct;
+
+type PricingPlanUI = {
+  key: string;
+  name: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  monthlyPriceId?: string;
+  yearlyPriceId?: string;
+  description: string;
+  features: Array<string | { name: string }>;
+  popular: boolean;
+  buttonText: string;
+  disabled: boolean;
 }
 
-export function PricingSection({ userId }: PricingSectionProps) {
+export function PricingSection({}: PricingSectionProps) {
   const user = useUser()
+  // Try to extract an email from the auth user object
+  type UserShape = {
+    email?: string | null;
+    primaryEmailAddress?: string | { emailAddress?: string | null } | null;
+    primaryEmail?: string | { address?: string | null } | null;
+    emailAddresses?: Array<{ emailAddress?: string | null }> | null;
+    emails?: Array<{ email?: string | null }> | null;
+  };
+  const getUserEmail = (u: UserShape | null | undefined): string | undefined => {
+    if (!u) return undefined;
+    if (typeof u.email === 'string') return u.email;
+    if (u.primaryEmailAddress) {
+      if (typeof u.primaryEmailAddress === 'string') return u.primaryEmailAddress;
+      if (typeof u.primaryEmailAddress.emailAddress === 'string') return u.primaryEmailAddress.emailAddress;
+    }
+    if (u.primaryEmail) {
+      if (typeof u.primaryEmail === 'string') return u.primaryEmail;
+      if (typeof u.primaryEmail.address === 'string') return u.primaryEmail.address;
+    }
+    if (u.emailAddresses && u.emailAddresses.length > 0 && typeof u.emailAddresses[0].emailAddress === 'string') return u.emailAddresses[0].emailAddress;
+    if (u.emails && u.emails.length > 0 && typeof u.emails[0].email === 'string') return u.emails[0].email;
+    return undefined;
+  };
+
   const [isAnnual, setIsAnnual] = useState(false)
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
-  const [pricingPlans, setPricingPlans] = useState([
+  const [isLoadingPrices, setIsLoadingPrices] = useState(true)
+  const [pricingPlans, setPricingPlans] = useState<PricingPlanUI[]>([
     {
       key: 'free',
-      name: 'Free',
+      name: 'FREE (Yes, Actually Free)',
       monthlyPrice: 0,
       yearlyPrice: 0,
       monthlyPriceId: undefined,
       yearlyPriceId: undefined,
-      description: 'Perfect for getting started',
+      description: `Perfect if you're still not sure this works`,
       features: [
         '1 marketing strategy per month',
-        'Basic templates',
-        'Email support',
-        'Community access'
       ] as Array<string | { name: string }>,
       popular: false,
       buttonText: 'Current Plan',
@@ -55,26 +82,24 @@ export function PricingSection({ userId }: PricingSectionProps) {
   ])
 
   useEffect(() => {
+    const start = Date.now()
     fetch('/api/prices')
       .then(res => res.json())
-      .then((data: any[]) => {
+  .then((data: Array<{ monthlyPrice?: { id: string; unit_amount: number; recurring?: { interval: string }; product: StripeProduct }; yearlyPrice?: { id: string; unit_amount: number; recurring?: { interval: string }; product: StripeProduct }; product: StripeProduct }>) => {
         const plans = [
           {
             key: 'free',
-            name: 'Free',
+            name: 'FREE (Yes, Actually Free)',
             monthlyPrice: 0,
             yearlyPrice: 0,
             monthlyPriceId: undefined,
             yearlyPriceId: undefined,
-            description: 'Perfect for getting started',
+            description: `Not sure? Start free. You can always upgrade when you're making money from the strategies.`,
             features: [
-              '1 marketing strategy per month',
-              'Basic templates',
-              'Email support',
-              'Community access'
+              '1 marketing strategy per month'
             ] as Array<string | { name: string }>,
             popular: false,
-            buttonText: 'Current Plan',
+            buttonText: 'Create an account',
             disabled: true
           },
           ...data.map((item) => ({
@@ -95,6 +120,15 @@ export function PricingSection({ userId }: PricingSectionProps) {
         ]
         setPricingPlans(plans)
       })
+      .finally(() => {
+        const elapsed = Date.now() - start
+        const remaining = 2000 - elapsed
+        if (remaining > 0) {
+          setTimeout(() => setIsLoadingPrices(false), remaining)
+        } else {
+          setIsLoadingPrices(false)
+        }
+      })
   }, [])
 
   const handleSubscriptionCheckout = async (planKey: string, priceId?: string) => {
@@ -108,6 +142,10 @@ export function PricingSection({ userId }: PricingSectionProps) {
       } else {
         throw new Error('Invalid plan selected')
       }
+  const email = user ? getUserEmail(user) : undefined
+      if (!priceId) {
+        throw new Error('No price available for the selected billing interval')
+      }
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
@@ -115,7 +153,7 @@ export function PricingSection({ userId }: PricingSectionProps) {
         },
         body: JSON.stringify({
           tier,
-          userId,
+          email,
           priceId,
         }),
       })
@@ -147,26 +185,45 @@ export function PricingSection({ userId }: PricingSectionProps) {
   return (
     <div className="py-24 sm:py-32 bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        {isLoadingPrices && (
+          <div className="flex flex-col items-center justify-center min-h-[30vh]">
+            <div className="mb-6">
+              <div className="flex gap-2">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="w-4 h-4 bg-[var(--primary)] animate-pulse shadow-hard"
+                    style={{
+                      animationDelay: `${i * 0.2}s`,
+                      animationDuration: '1s'
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+            <p className="text-[var(--primary)] text-sm font-light">Fetching plans…</p>
+          </div>
+        )}
         {/* Back Button */}
         <div className="mb-8">
           <button
             onClick={() => window.location.href = '/'}
             className="btn-square w-full max-w-xs text-lg py-3"
           >
-            ← Back to Home
+            ← Back Home
           </button>
         </div>
 
         {/* Header */}
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-base font-semibold leading-7 bg-[var(--primary)] text-white px-4 py-2 inline-block shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            Pricing
+          <h2 className="mb-6 text-base font-semibold leading-7 bg-[var(--primary)] text-[var(--secondary)] px-4 py-2 inline-block shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            LaunchPrint
           </h2>
           <p className="mt-2 text-4xl font-bold tracking-tight text-black sm:text-5xl">
-            Choose the right plan for you
+            Stop Overthinking. Pick a Plan and Start Getting Customers.
           </p>
           <p className="mt-6 text-lg leading-8 text-gray-600">
-            Start with our flexible plans. Upgrade or downgrade at any time.
+            Here&apos;s the deal: Most people spend more time choosing a Netflix plan than their marketing strategy. Don&apos;t be that person.
           </p>
         </div>
 
@@ -201,15 +258,15 @@ export function PricingSection({ userId }: PricingSectionProps) {
           </div>
         </div>
 
-        {/* Subscription Plans */}
-        <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-3">
+  {/* Subscription Plans */}
+  {!isLoadingPrices && (
+  <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-3">
           {pricingPlans.map((plan) => {
             const isPopular = plan.popular
             const price = isAnnual ? plan.yearlyPrice : plan.monthlyPrice
             const priceId = isAnnual ? plan.yearlyPriceId : plan.monthlyPriceId
             const originalPrice = isAnnual ? Math.round((plan.monthlyPrice || 0) * 12) : undefined
             const savings = isAnnual && plan.monthlyPrice && plan.yearlyPrice ? Math.round(plan.monthlyPrice * 12 - plan.yearlyPrice) : 0
-            const actualUserId = userId || user?.id
 
             return (
               <div
@@ -283,13 +340,11 @@ export function PricingSection({ userId }: PricingSectionProps) {
                   onClick={() => {
                     if ((plan.monthlyPrice || plan.yearlyPrice) === 0) {
                       window.location.href = '/handler/sign-up'
-                    } else if (actualUserId) {
-                      handleSubscriptionCheckout(plan.key, priceId)
                     } else {
-                      window.location.href = '/handler/sign-up'
+                      handleSubscriptionCheckout(plan.key, priceId)
                     }
                   }}
-                  disabled={loadingPlan === plan.key || plan.disabled}
+                  disabled={loadingPlan === plan.key }
                   className={`btn-square w-full max-w-xs ${
                     isPopular ? 'btn-square-accent' : ''}`}
                 >
@@ -321,10 +376,16 @@ export function PricingSection({ userId }: PricingSectionProps) {
                     </li>
                   ))}
                 </ul>
+        {!user?.id && plan.monthlyPrice !== 0 && (
+                  <p className={`mt-4 text-xs ${isPopular ? 'text-gray-300' : 'text-gray-600'}`}>
+          You can check out as a guest. We&apos;ll create your account automatically using your email after purchase.
+                  </p>
+                )}
               </div>
             )
           })}
-        </div>
+  </div>
+  )}
       </div>
     </div>
   )
