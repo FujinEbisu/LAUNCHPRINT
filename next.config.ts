@@ -20,6 +20,18 @@ const nextConfig: NextConfig = {
             value: 'strict-origin-when-cross-origin'
           },
           {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains'
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'geolocation=(), microphone=(), camera=()'
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block'
+          },
+          {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",

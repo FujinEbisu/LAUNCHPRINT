@@ -26,6 +26,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/public/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/src/app/favicon.ico" type="image/x-icon" />
+        {/* Open Graph Tags */}
+        <meta property="og:title" content="LaunchPrint - Actionable Marketing for Indie Founders" />
+        <meta property="og:description" content="Get a step-by-step marketing strategy, launch checklist, and community outreach plan. Built for beginners and indie hackers." />
+        <meta property="og:image" content="https://launchprint.deplo.yt/og-image.png" />
+        <meta property="og:url" content="https://launchprint.deplo.yt/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="LaunchPrint" />
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="LaunchPrint - Actionable Marketing for Indie Founders" />
+        <meta name="twitter:description" content="Get a step-by-step marketing strategy, launch checklist, and community outreach plan. Built for beginners and indie hackers." />
+        <meta name="twitter:image" content="https://launchprint.deplo.yt/og-image.png" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen border-8 border-[var(--primary)]`}
       >
