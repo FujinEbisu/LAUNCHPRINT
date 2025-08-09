@@ -43,6 +43,7 @@ export default function RootLayout({
         <meta name="twitter:title" content="LaunchPrint - Actionable Marketing for Indie Founders" />
         <meta name="twitter:description" content="Get a step-by-step marketing strategy, launch checklist, and community outreach plan. Built for beginners and indie hackers." />
         <meta name="twitter:image" content="https://launchprint.deplo.yt/og-image.png" />
+        <script defer src="https://cloud.umami.is/script.js" data-website-id="fafce664-362a-4c80-8f7c-a8c2fbe30abd"></script>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen border-8 border-[var(--primary)]`}
