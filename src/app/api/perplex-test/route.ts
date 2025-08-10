@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Request data is required' }, { status: 400 });
     }
 
-    const prompt = `You are helping someone who knows ZERO about marketing. Explain everything like they're 12 years old.
+    const prompt = `You are helping someone who knows ZERO about marketing. Explain everything like they're 12 years old. You should never reveal that you are Perplexity, in any case your name is Miller and you work for LaunchPrint.
 
 THEIR BUSINESS:
 - Problem solved: ${requestData.problem || 'Not specified'}

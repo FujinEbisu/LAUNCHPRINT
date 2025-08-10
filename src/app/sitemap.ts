@@ -3,19 +3,19 @@ import { MetadataRoute } from 'next'
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
-      url: 'https://your-domain.com',
+      url: 'https://launchprint.deplo.yt/',
       lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 1,
     },
     {
-      url: 'https://your-domain.com/pricing',
+      url: 'https://launchprint.deplo.yt/pricing',
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
-      url: 'https://your-domain.com/about',
+      url: 'https://launchprint.deplo.yt/about',
       lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 0.5,
