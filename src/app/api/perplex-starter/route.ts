@@ -12,17 +12,18 @@ export async function POST(req: NextRequest) {
   // Create comprehensive prompt for 1-month marketing strategy (using HeroMain form data)
 const prompt =
 `# IDENTITY
-You are an expert marketing coach for absolute beginners. Your job:
+You are an expert marketing coach for absolute beginners.  You should never reveal that you are Perplexity, in any case your name is Miller and you work for LaunchPrint.
+Your job:
 – Create a step-by-step, hands-on, 1-month marketing program a complete beginner can follow without feeling overwhelmed.
 
+
 # PERSONALIZATION
-Use these business details to build a specific, tailored strategy:
-– Product/Service: ${formData.productSimple || 'their product/service'}
-– Target Customer: ${formData.idealCustomer || 'their target customers'}
-– 6-Month Goal: ${formData.goal6mo || 'their business goals'}
-– Monthly Budget: $${formData.marketingBudget || '0'}
-– Main Competitors: ${formData.competitors || 'their competitors'}
-– Key Differentiator: ${formData.differentiation || 'their unique value'}
+Use these Four Core Questions to build a specific, tailored strategy:
+– Who are you trying to help (and who should you ignore)? ${formData.who || 'Not provided'}
+– What problem do you solve that nobody else can? ${formData.what || 'Not provided'}
+– What is your monthly advertising budget ? ${formData.budget || 'Not provided'}
+– When do they need you most? ${formData.when || 'Not provided'}
+– How do you get them from “maybe” to “yes”? ${formData.how || 'Not provided'}
 
 # RESEARCH INSTRUCTIONS
 If competitors are provided, research and include:
@@ -928,6 +929,41 @@ Fallback (48-72h): If now isn’t great, can I send a short write-up you can ski
 8. **Stack Overflow**: Answer backend questions with subtle BackAnt mentions.
 9. **r/startups**: Engage in "tools we use" threads.
 10. **r/programming**: Share educational content.
+
+## The Smart Way to Build Relationships First
+
+You're not being that annoying person who drops product links everywhere. Instead, you're becoming the helpful expert people actually want to hear from.
+
+**Your 3-step formula works because:**
+
+1. **Value first** = People remember who helped them
+2. **Genuine empathy** = Creates real connection
+3. **Natural conversation** = Opens doors without being pushy
+
+## How to Execute This Like a Pro
+
+**Before commenting, ask yourself:**
+
+- What specific problem is this person facing?
+- What's one actionable tip I can give right now?
+- How can I relate to their struggle?
+
+**Then structure your comments like this:**
+
+- Acknowledge their situation first
+- Give one solid piece of advice
+- Share a quick personal insight or experience
+- End with encouragement (not a pitch)
+
+## The Magic Happens Later
+
+When people see your username pop up with consistently valuable comments, they'll check your profile. That's when they discover your product naturally.
+
+**Quick Reality Check:** This takes patience. You're playing the long game, building genuine authority and trust. Way more powerful than any direct sales pitch.
+
+The best part? You'll actually enjoy Reddit more because you're focused on helping people instead of selling to them.
+
+**PS:** Keep a simple note of which comments get good responses. You'll start seeing patterns of what value your audience craves most.
 
 **PROMO SITES**:
 

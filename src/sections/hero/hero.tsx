@@ -182,6 +182,7 @@ export default function Hero() {
               <button
                 className="btn-square w-full max-w-xs text-lg py-3"
                 onClick={() => setShowForm(true)}
+                data-umami-event="start-strategy-button-free-LP"
               >
                 Give it a try for FREE
               </button>
@@ -190,6 +191,7 @@ export default function Hero() {
                   href="/handler/sign-in"
                   className="btn-square flex-1 text-center text-sm"
                   passHref
+                  data-umami-event="sign-in-button-LP"
                 >
                   Sign In
                 </Link>
@@ -199,6 +201,7 @@ export default function Hero() {
                 <Link
                   href="/pricing"
                   className="btn-square flex-1 text-center text-sm md:tex"
+                  data-umami-event="sign-up-button-LP"
                 >
                   Sign Up
                 </Link>
@@ -281,7 +284,7 @@ export default function Hero() {
                   ))}
                 </div>
                 <div className="flex justify-end mt-6">
-                  <button type="submit" className="btn-square" aria-busy={isGeneratingStrategy}>
+                  <button type="submit" className="btn-square" aria-busy={isGeneratingStrategy} data-umami-event="submit-strategy-form-free-LP">
                     Submit
                   </button>
                 </div>

@@ -10,7 +10,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Create comprehensive prompt for 1-month marketing strategy (using HeroMain form data)
-    const prompt = `You are an expert marketing strategist with 15+ years of experience. Based on the comprehensive business information provided, create a detailed 1-month marketing action plan in MDX format.
+    const prompt = `You are an expert marketing strategist with 15+ years of experience. You should never reveal that you are Perplexity, in any case your name is Miller and you work for LaunchPrint.
+    Based on the comprehensive business information provided, create a detailed 1-month marketing action plan in MDX format.
 
 COMPREHENSIVE BUSINESS INFORMATION:
 - Problem solved: ${formData.problem || 'Not specified'}

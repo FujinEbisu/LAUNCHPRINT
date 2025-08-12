@@ -73,52 +73,63 @@ export default function UserProfilePage() {
   });
 
   // Four Core Questions with guidance bullets for info bubble
-  const coreQuestions: Question[] = [
-    {
-      label: 'Who is your ideal customer and what do they truly need?',
-      name: 'who',
-      bullets: [
-        'Pain points and daily challenges',
-        'Behavior and decision process',
-        'Preferred channels and content habits',
-        'Buying triggers and motivations',
-        'Objections and concerns preventing conversion',
-      ],
-    },
-    {
-      label: 'What value proposition will compel them to act?',
-      name: 'what',
-      bullets: [
-        'Specific transformation you deliver',
-        'How you solve top problems better than alternatives',
-        'Tangible post-purchase benefits',
-        'Social proof and credibility signals',
-        'Risk reversal (guarantees, trials)',
-      ],
-    },
-    {
-      label: 'When is the optimal time to reach them and what triggers action?',
-      name: 'when',
-      bullets: [
-        'Stage of buying journey (awareness, consideration, decision)',
-        'Seasonality and market conditions',
-        'Trigger events creating urgency',
-        'Follow-up sequences and nurturing timelines',
-        'Touchpoint frequency that keeps you top-of-mind',
-      ],
-    },
-    {
-      label: 'How will you systematically guide them through each conversion step?',
-      name: 'how',
-      bullets: [
-        'Map each stage from awareness to purchase and beyond',
-        'Content and touchpoints needed at every step',
-        'Conversion mechanisms (LPs, email, retargeting, etc.)',
-        'Friction points causing abandonment',
-        'Measurement systems to track and optimize',
-      ],
-    },
-  ];
+const coreQuestions: Question[] = [
+{
+label: 'Who are you trying to help (and who should you ignore)?',
+name: 'who',
+bullets: [
+'What keeps them up at 3 AM',
+'Where they hang out and how they decide',
+'What makes them buy right now',
+'Top objections stopping them',
+'Who is NOT a fit (exclude on purpose)',
+],
+},
+{
+label: 'What problem do you solve that nobody else can?',
+name: 'what',
+bullets: [
+'Clear transformation in 30 days or less',
+'Your unfair advantage vs. alternatives',
+'Simple proof it works (wins, screenshots, cases)',
+'Tangible results they’ll feel after buying',
+'Risk reversal (guarantee, trial, easy refund)',
+],
+},
+{
+label: 'What is your monthly advertising budget (be honest)?',
+name: 'budget',
+bullets: [
+'Monthly ad spend range (EUR/USD)',
+'Preferred channels for spend (Meta, Google, TikTok, LinkedIn)',
+'Target CPA/CAC and AOV/LTV (ballpark is fine)',
+'Attribution setup (pixels, conversions, CRM)',
+'Runway: how many months can you fund testing?',
+],
+},
+{
+label: 'When do they need you most?',
+name: 'when',
+bullets: [
+'Buying stage (just looking, comparing, ready)',
+'Best timing (season, month, moments)',
+'Trigger events that create urgency',
+'Follow-up cadence that gets replies',
+'How often to show up to stay top-of-mind',
+],
+},
+{
+label: 'How do you get them from “maybe” to “yes”?',
+name: 'how',
+bullets: [
+'Step-by-step path from discover → buy → stay',
+'Content/touchpoints for each step',
+'Conversion tools (LP, email, DMs, retargeting)',
+'Remove friction (speed, clarity, trust)',
+'Measure and improve (one metric per step)',
+],
+},
+];
 
   // Use the same Four Core Questions across tiers for a focused, high-signal brief
   const freeQuestions: Question[] = coreQuestions;
@@ -436,6 +447,7 @@ export default function UserProfilePage() {
                     }`}
                     onClick={() => setShowStrategyModal(true)}
                     disabled={!canCreateStrategy()}
+                    data-umami-event="create-strategy-button"
                   >
                     {getButtonText()}
                   </button>
@@ -449,6 +461,7 @@ export default function UserProfilePage() {
                   <button
                     className="btn-square text-xl px-8 py-4"
                     onClick={() => router.push('/user-profiles/strategies')}
+                    data-umami-event="view-all-strategies-button"
                   >
                     View All My Strategies
                   </button>
@@ -466,6 +479,7 @@ export default function UserProfilePage() {
                   }`}
                   onClick={() => setShowStrategyModal(true)}
                   disabled={!canCreateStrategy()}
+                  data-umami-event="create-strategy-button-free-tier"
                 >
                   {getButtonText()}
                 </button>
@@ -517,6 +531,7 @@ export default function UserProfilePage() {
               <button
                 className="btn-square text-xl px-8 py-4"
                 onClick={() => router.push('/pricing')}
+                data-umami-event="view-pricing-plans-button"
               >
                 View Pricing Plans
               </button>
@@ -579,7 +594,7 @@ export default function UserProfilePage() {
                           <span className="relative inline-block ml-2 align-middle group">
                             <button
                               type="button"
-                              className="inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-[var(--primary)] text-[var(--primary)] font-bold text-xs cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-[var(--accent2)]"
+                              className="inline-flex items-center justify-center w-7 h-7 border-2 border-[var(--primary)] text-[var(--primary)] font-bold text-xs cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-[var(--accent2)]"
                               aria-label="More info"
                               aria-expanded={openHintIndex === index}
                               aria-controls={`qtip-${index}`}
@@ -605,7 +620,7 @@ export default function UserProfilePage() {
                         name={question.name}
                         value={strategyForm[question.name as keyof typeof strategyForm]}
                         onChange={handleStrategyFormChange}
-                        className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] resize-none"
+                        className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)] resize-none"
                         rows={3}
                         placeholder={'Provide detailed information...'}
                         required
@@ -638,6 +653,7 @@ export default function UserProfilePage() {
                   <button
                     type="submit"
                     className="btn-square-accent px-8 py-3"
+                    data-umami-event="generate-strategy-button"
                   >
                     Generate Strategy
                   </button>
@@ -658,6 +674,7 @@ export default function UserProfilePage() {
             <button
               className="w-full btn-square text-sm"
               onClick={() => router.push('/pricing')}
+              data-umami-event="upgrade-plan-button"
             >
               Upgrade Plan
             </button>
@@ -667,6 +684,7 @@ export default function UserProfilePage() {
                 className="w-full btn-square text-sm"
                 onClick={handleCancelSubscription}
                 disabled={isCancellingSubscription}
+                data-umami-event="cancel-subscription-button"
               >
                 {isCancellingSubscription ? 'Cancelling...' : 'Cancel Subscription'}
               </button>

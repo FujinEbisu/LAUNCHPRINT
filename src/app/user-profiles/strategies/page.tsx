@@ -176,12 +176,14 @@ export default function UserStrategiesPage() {
                   <button
                     onClick={() => copyToClipboard(strategy.strategy)}
                     className="btn-square text-sm w-full sm:w-auto"
+                    data-umami-event="copy-strategy-button"
                   >
                     Copy
                   </button>
                   <button
                     onClick={() => downloadStrategy(strategy)}
                     className="btn-square text-sm w-full sm:w-auto"
+                    data-umami-event="download-strategy-button"
                   >
                     Download
                   </button>

@@ -209,6 +209,7 @@ export function PricingSection({}: PricingSectionProps) {
           <button
             onClick={() => window.location.href = '/'}
             className="btn-square w-full max-w-xs text-lg py-3"
+            data-umami-event="back-to-home-button-pricing"
           >
             ← Back Home
           </button>
@@ -238,6 +239,7 @@ export function PricingSection({}: PricingSectionProps) {
                   ? 'bg-black text-white border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                   : 'text-gray-700 hover:text-black border-transparent'
               }`}
+              data-umami-event="toggle-monthly-billing-pricing"
             >
               Monthly
             </button>
@@ -249,6 +251,7 @@ export function PricingSection({}: PricingSectionProps) {
                   ? 'bg-black text-white border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                   : 'text-gray-700 hover:text-black border-transparent'
               }`}
+              data-umami-event="toggle-annual-billing-pricing"
             >
               Annual
               <span className="ml-1 text-xs text-green-600 font-semibold">
@@ -347,6 +350,7 @@ export function PricingSection({}: PricingSectionProps) {
                   disabled={loadingPlan === plan.key }
                   className={`btn-square w-full max-w-xs ${
                     isPopular ? 'btn-square-accent' : ''}`}
+                  data-umami-event={`subscribe-button-${plan.key}`}
                 >
                   {loadingPlan === plan.key ? (
                     <div className="flex items-center justify-center">
