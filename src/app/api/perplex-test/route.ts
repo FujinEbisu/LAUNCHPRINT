@@ -35,7 +35,7 @@ If competitors are provided, research and include:
 
 # PROGRAM STRUCTURE & OUTPUT
 (0) Before Day 1: Provide a checklist titled 'Join these communities and forums' listing every relevant subreddit, forum, and launch/promo directory that can bring value to this user; include links, a one-line “how to use,” and an activity verification note (“checked [month/year]”). Do NOT include Discord or Slack.
-(1) 15-day plan: 'Day 1' through 'Day 15'—no skipped days—
+(1) 7-day plan: 'Day 1' through 'Day 7'—no skipped days—
 Each day: 5 to 6 actionable tasks. There are no weekends.
 (2) Week-by-week, day-by-day actionable tasks in checklist form.
 (3) Personalized scripts/templates (good & bad versions) directly after each outreach—include fill-in-the-blank tip.
