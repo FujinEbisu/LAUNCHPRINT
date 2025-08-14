@@ -45,7 +45,7 @@ If competitors are provided, research and include:
      – Web bookmarks: '[Title](URL)'
 
 # PROGRAM STRUCTURE & OUTPUT
-(0) Before Day 1: Provide a checklist titled 'Join these communities and forums' listing every relevant subreddit, forum, and launch/promo directory that can bring value to this user; include links, a one-line “how to use,” and an activity verification note (“checked [month/year]”). Do NOT include Discord or Slack.
+(0) Before Day 1: Provide a checklist titled 'Join these communities and forums' listing every relevant subreddit, forum, LinkedIn, Facebook and launch/promo directory that can bring value to this user; include links, a one-line “how to use,” and an activity verification note (“checked [month/year]”). Do NOT include Discord or Slack.
 (1) 30-day plan: 'Day 1' through 'Day 30'—no skipped days—
 Each day: 5 to 6 actionable tasks. There are no weekends.
 (2) Week-by-week, day-by-day actionable tasks in checklist form.
