@@ -180,13 +180,13 @@ export default function Hero() {
           {!formSubmitted && !showForm && (
             <div className="flex flex-col items-center gap-4">
               <button
-                className="btn-square w-full max-w-xs text-lg py-3"
+                className="btn-square w-full max-w-lg text-lg py-3"
                 onClick={() => setShowForm(true)}
                 data-umami-event="start-strategy-button-free-LP"
               >
                 Give it a try for FREE
               </button>
-              <div className="flex gap-4 w-full max-w-xs">
+              <div className="flex gap-4 w-full max-w-lg">
                 <Link
                   href="/handler/sign-in"
                   className="btn-square flex-1 text-center text-sm"
@@ -200,7 +200,7 @@ export default function Hero() {
                 </div>
                 <Link
                   href="/pricing"
-                  className="btn-square flex-1 text-center text-sm md:tex"
+                  className="btn-square flex-1 text-center text-sm justify-center align-middle"
                   data-umami-event="sign-up-button-LP"
                 >
                   Create an Account
