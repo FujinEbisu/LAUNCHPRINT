@@ -203,7 +203,7 @@ export default function Hero() {
                   className="btn-square flex-1 text-center text-sm md:tex"
                   data-umami-event="sign-up-button-LP"
                 >
-                  Sign Up
+                  Create an Account
                 </Link>
               </div>
             </div>
