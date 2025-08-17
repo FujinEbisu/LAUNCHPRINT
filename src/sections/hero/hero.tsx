@@ -173,8 +173,8 @@ export default function Hero() {
         </div>
 
         <div className='w-full max-w-2xl content-center p-4'>
-          <h2 className='text-sm font-medium text-center mb-4 text-[var(--muted)]'>
-            You can Start Here
+          <h2 className='text-lg font-medium text-center mb-4 text-[var(--muted)]'>
+            You can Start Here with a 7 day free To-Do
           </h2>
           {/* Right column content area: CTA, loader, or chat */}
           {!formSubmitted && !showForm && (
