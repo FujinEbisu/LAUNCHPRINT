@@ -43,6 +43,16 @@ export default function UserProfilePage() {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [strategyUsage, setStrategyUsage] = useState({ used: 0, limit: 0 });
   const [openHintIndex, setOpenHintIndex] = useState<number | null>(null);
+  const [showHeadlinesModal, setShowHeadlinesModal] = useState(false);
+  const [isGeneratingHeadlines, setIsGeneratingHeadlines] = useState(false);
+  const [generatedHeadlines, setGeneratedHeadlines] = useState<string | null>(null);
+  const [headlinesForm, setHeadlinesForm] = useState({
+    product: '',
+    targetAudience: '',
+    uniqueValue: '',
+    tone: 'professional', // professional, casual, urgent, friendly
+    purpose: 'sales', // sales, awareness, engagement, conversion
+  });
   const [strategyForm, setStrategyForm] = useState({
     // Core Four Qs
     who: '',
@@ -233,6 +243,10 @@ bullets: [
     setStrategyForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handleHeadlinesFormChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLSelectElement>) => {
+    setHeadlinesForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
   /* THIS IS THE LOGIC IN CHARGE TO REDIRECT THE FORM TO EACH CORRESPONDING API/PERPLEX-"TIER" */
   const getPerplexApiEndpoint = () => {
     if (subscriptionStatus?.currentTier === 'starter') {
@@ -310,6 +324,56 @@ bullets: [
       // Handle error - don't count usage
       setIsGeneratingStrategy(false);
       alert('Something went wrong. Please try again.');
+    }
+  };
+
+  const handleHeadlinesFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsGeneratingHeadlines(true);
+
+    try {
+      const response = await fetch('/api/perplex-headline-gen', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(headlinesForm)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setGeneratedHeadlines(data.headlines);
+      } else {
+        alert(data.error || 'Failed to generate headlines. Please try again.');
+      }
+    } catch (error) {
+      console.error('Headlines generation error:', error);
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setIsGeneratingHeadlines(false);
+    }
+  };
+
+  const handleCloseHeadlinesModal = () => {
+    setShowHeadlinesModal(false);
+    setGeneratedHeadlines(null);
+    setHeadlinesForm({
+      product: '',
+      targetAudience: '',
+      uniqueValue: '',
+      tone: 'professional',
+      purpose: 'sales',
+    });
+  };
+
+  const copyHeadlinesToClipboard = () => {
+    if (generatedHeadlines) {
+      navigator.clipboard.writeText(generatedHeadlines).then(() => {
+        alert('Headlines copied to clipboard!');
+      }).catch(() => {
+        alert('Failed to copy headlines. Please select and copy manually.');
+      });
     }
   };
 
@@ -437,7 +501,7 @@ bullets: [
           {/* Buttons Container */}
           <div className="mb-8">
             {subscriptionStatus.currentTier !== 'free' ? (
-              /* Paid Users: Two buttons side by side */
+              /* Paid Users: Three buttons in a row */
               <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                 {/* Create New Strategy Button */}
                 <div className="text-center">
@@ -456,6 +520,20 @@ bullets: [
                   </p>
                 </div>
 
+                {/* Headlines Generator Button */}
+                <div className="text-center">
+                  <button
+                    className="btn-square text-xl px-8 py-4"
+                    onClick={() => setShowHeadlinesModal(true)}
+                    data-umami-event="generate-headlines-button"
+                  >
+                    Generate Headlines
+                  </button>
+                  <p className="text-black mt-2 text-sm">
+                    Create compelling headlines for your campaigns
+                  </p>
+                </div>
+
                 {/* View All Strategies Button */}
                 <div className="text-center">
                   <button
@@ -471,18 +549,36 @@ bullets: [
                 </div>
               </div>
             ) : (
-              /* Free Users: Single button centered */
-              <div className="text-center">
-                <button
-                  className={`btn-square-accent text-xl px-8 py-4 ${
-                    !canCreateStrategy() ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  onClick={() => setShowStrategyModal(true)}
-                  disabled={!canCreateStrategy()}
-                  data-umami-event="create-strategy-button-free-tier"
-                >
-                  {getButtonText()}
-                </button>
+              /* Free Users: Two buttons side by side */
+              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                <div className="text-center">
+                  <button
+                    className={`btn-square-accent text-xl px-8 py-4 ${
+                      !canCreateStrategy() ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                    onClick={() => setShowStrategyModal(true)}
+                    disabled={!canCreateStrategy()}
+                    data-umami-event="create-strategy-button-free-tier"
+                  >
+                    {getButtonText()}
+                  </button>
+                  <p className="text-black mt-2 text-sm">
+                    Monthly limit applies
+                  </p>
+                </div>
+
+                <div className="text-center">
+                  <button
+                    className="btn-square text-xl px-8 py-4"
+                    onClick={() => setShowHeadlinesModal(true)}
+                    data-umami-event="generate-headlines-button-free-tier"
+                  >
+                    Generate Headlines
+                  </button>
+                  <p className="text-black mt-2 text-sm">
+                    Create compelling headlines
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -543,7 +639,7 @@ bullets: [
       {/* Strategy Creation Modal */}
       {showStrategyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className={`bg-white border-4 border-black shadow-hard w-full max-h-[90vh] overflow-y-auto ${
+          <div className={`bg-[var(--secondary)] border-4 border-[var(--primary)] shadow-hard w-full max-h-[90vh] overflow-y-auto ${
             subscriptionStatus?.currentTier === 'pro' ? 'max-w-6xl' :
             subscriptionStatus?.currentTier === 'starter' ? 'max-w-5xl' : 'max-w-3xl'
           }`}>
@@ -551,7 +647,7 @@ bullets: [
               {/* Header with tier-specific styling */}
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className={`font-bold text-black mb-2 ${
+                  <h2 className={`font-bold text-[var(--primary)] mb-2 ${
                     subscriptionStatus?.currentTier === 'pro' ? 'text-3xl' :
                     subscriptionStatus?.currentTier === 'starter' ? 'text-2xl' : 'text-xl'
                   }`}>
@@ -569,7 +665,7 @@ bullets: [
                 </div>
                 <button
                   onClick={() => setShowStrategyModal(false)}
-                  className="text-black hover:bg-gray-100 p-2 font-bold text-xl"
+                  className="text-[var(--primary)] hover:bg-[var(--secondary)] hover:shadow-hard p-2 font-bold text-xl border-2 border-transparent hover:border-[var(--primary)]"
                 >
                   ✕
                 </button>
@@ -605,9 +701,9 @@ bullets: [
                             <span
                               id={`qtip-${index}`}
                               role="tooltip"
-                              className={`absolute z-50 ${openHintIndex === index ? 'block' : 'hidden'} md:group-hover:block bg-white border-2 border-black p-3 shadow-hard w-72 max-w-[90vw] left-1/2 -translate-x-1/2 mt-2`}
+                              className={`absolute z-50 ${openHintIndex === index ? 'block' : 'hidden'} md:group-hover:block bg-[var(--secondary)] border-2 border-[var(--primary)] p-3 shadow-hard w-72 max-w-[90vw] left-1/2 -translate-x-1/2 mt-2`}
                             >
-                              <ul className="list-disc pl-5 text-sm text-black">
+                              <ul className="list-disc pl-5 text-sm text-[var(--primary)]">
                                 {question.bullets.map((b: string, i: number) => (
                                   <li key={i}>{b}</li>
                                 ))}
@@ -631,10 +727,10 @@ bullets: [
 
                 {/* Progress indicator - B&W only */}
                 <div className="mb-6">
-                  <div className="flex justify-end text-sm text-gray-600 mb-2">
+                  <div className="flex justify-end text-sm text-[var(--primary)] mb-2">
                     <span>{getCurrentQuestions().length} questions</span>
                   </div>
-                  <div className="w-full bg-gray-200 h-2 border border-black">
+                  <div className="w-full bg-[var(--secondary)] border-2 border-[var(--primary)] h-2">
                     <div
                       className="bg-[var(--primary)] h-full transition-all duration-300"
                       style={{ width: '100%' }}
@@ -659,6 +755,209 @@ bullets: [
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Headlines Generation Modal */}
+      {showHeadlinesModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-[var(--secondary)] border-4 border-[var(--primary)] shadow-hard w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-[var(--primary)] mb-2">
+                    Generate Headlines
+                  </h2>
+                  <p className="text-[var(--muted)] text-sm">
+                    Create compelling headlines for your marketing campaigns
+                  </p>
+                  {/* Warning Message */}
+                  <div className="bg-[var(--secondary)] border-2 border-[var(--primary)] p-3 mt-3 shadow-hard">
+                    <p className="text-sm text-[var(--primary)] font-medium">
+                      ⚠️ Headlines are not stored and will be lost when you close this modal. Copy them before closing!
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleCloseHeadlinesModal}
+                  className="text-[var(--primary)] hover:bg-[var(--secondary)] hover:shadow-hard p-2 font-bold text-xl border-2 border-transparent hover:border-[var(--primary)]"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Loading State */}
+              {isGeneratingHeadlines && (
+                <div className="text-center py-8">
+                  <div className="flex gap-2 mb-6 justify-center">
+                    {[0, 1, 2].map((i) => (
+                      <div
+                        key={i}
+                        className="w-4 h-4 bg-[var(--primary)] animate-pulse shadow-hard"
+                        style={{
+                          animationDelay: `${i * 0.2}s`,
+                          animationDuration: '1s'
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-[var(--primary)] font-medium text-lg">
+                    Generating compelling headlines...
+                  </p>
+                </div>
+              )}
+
+              {/* Generated Headlines Display */}
+              {generatedHeadlines && !isGeneratingHeadlines && (
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-bold text-[var(--primary)]">Your Generated Headlines</h3>
+                    <button
+                      onClick={copyHeadlinesToClipboard}
+                      className="btn-square px-4 py-2 text-sm"
+                      data-umami-event="copy-headlines"
+                    >
+                      Copy All Headlines
+                    </button>
+                  </div>
+                  <div className="bg-[var(--secondary)] border-2 border-[var(--primary)] p-4 max-h-96 overflow-y-auto shadow-hard">
+                    <pre className="whitespace-pre-wrap text-sm text-[var(--primary)] font-mono">
+                      {generatedHeadlines}
+                    </pre>
+                  </div>
+                  <div className="mt-4 flex gap-4">
+                    <button
+                      onClick={() => {
+                        setGeneratedHeadlines(null);
+                      }}
+                      className="btn-square text-sm"
+                    >
+                      Generate New Headlines
+                    </button>
+                    <button
+                      onClick={handleCloseHeadlinesModal}
+                      className="btn-square text-sm"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Form - Only show when no headlines are generated */}
+              {!generatedHeadlines && !isGeneratingHeadlines && (
+                <form onSubmit={handleHeadlinesFormSubmit}>
+                  <div className="space-y-4 mb-6">
+                    {/* Product/Service */}
+                    <div>
+                      <label className="block text-[var(--primary)] font-medium mb-2">
+                        1. Product or Service
+                      </label>
+                      <textarea
+                        name="product"
+                        value={headlinesForm.product}
+                        onChange={handleHeadlinesFormChange}
+                        className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)] resize-none"
+                        rows={2}
+                        placeholder="Describe what you're selling (e.g., 'AI-powered project management tool for remote teams')"
+                        required
+                      />
+                    </div>
+
+                    {/* Target Audience */}
+                    <div>
+                      <label className="block text-[var(--primary)] font-medium mb-2">
+                        2. Target Audience
+                      </label>
+                      <textarea
+                        name="targetAudience"
+                        value={headlinesForm.targetAudience}
+                        onChange={handleHeadlinesFormChange}
+                        className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)] resize-none"
+                        rows={2}
+                        placeholder="Who are you targeting? (e.g., 'Busy startup founders who struggle with team coordination')"
+                        required
+                      />
+                    </div>
+
+                    {/* Unique Value */}
+                    <div>
+                      <label className="block text-[var(--primary)] font-medium mb-2">
+                        3. Unique Value Proposition
+                      </label>
+                      <textarea
+                        name="uniqueValue"
+                        value={headlinesForm.uniqueValue}
+                        onChange={handleHeadlinesFormChange}
+                        className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)] resize-none"
+                        rows={2}
+                        placeholder="What makes you different? (e.g., 'Only tool that automatically syncs with 50+ apps and learns team patterns')"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Tone */}
+                      <div>
+                        <label className="block text-[var(--primary)] font-medium mb-2">
+                          4. Tone
+                        </label>
+                        <select
+                          name="tone"
+                          value={headlinesForm.tone}
+                          onChange={handleHeadlinesFormChange}
+                          className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)]"
+                        >
+                          <option value="professional">Professional</option>
+                          <option value="casual">Casual</option>
+                          <option value="urgent">Urgent</option>
+                          <option value="friendly">Friendly</option>
+                          <option value="bold">Bold</option>
+                        </select>
+                      </div>
+
+                      {/* Purpose */}
+                      <div>
+                        <label className="block text-[var(--primary)] font-medium mb-2">
+                          5. Purpose
+                        </label>
+                        <select
+                          name="purpose"
+                          value={headlinesForm.purpose}
+                          onChange={handleHeadlinesFormChange}
+                          className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)]"
+                        >
+                          <option value="sales">Sales</option>
+                          <option value="awareness">Brand Awareness</option>
+                          <option value="engagement">Engagement</option>
+                          <option value="conversion">Conversion</option>
+                          <option value="lead-generation">Lead Generation</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 justify-end">
+                    <button
+                      type="button"
+                      onClick={handleCloseHeadlinesModal}
+                      className="btn-square"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn-square-accent px-8 py-3"
+                      data-umami-event="generate-headlines-submit"
+                    >
+                      Generate Headlines
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>
@@ -701,7 +1000,7 @@ bullets: [
       {/* Loading State for Strategy Generation */}
       {isGeneratingStrategy && (
         <div className="fixed inset-0 bg-[var(--primary)] bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white border-4 border-[var(--primary)] shadow-hard p-8 text-center">
+          <div className="bg-[var(--secondary)] border-4 border-[var(--primary)] shadow-hard p-8 text-center">
             <div className="flex gap-2 mb-6 justify-center">
               {[0, 1, 2].map((i) => (
                 <div
