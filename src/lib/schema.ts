@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, integer, boolean, jsonb } from 'drizzle-orm/pg-core';
 
 // Users table for Better Auth (matches Better Auth requirements)
 export const users = pgTable('users', {
@@ -83,4 +83,24 @@ export const chatMessages = pgTable('chatMessages', {
   role: text('role').notNull(), // 'user' or 'assistant'
   content: text('content').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Follow-up feedback table (monthly double-down data)
+export const strategyFeedback = pgTable('strategy_feedback', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  previousStrategyId: integer('previous_strategy_id').notNull().references(() => marketingStrategies.id, { onDelete: 'cascade' }),
+  outcomes: jsonb('outcomes'),
+  reflections: text('reflections'),
+  blockers: text('blockers'),
+  goals: jsonb('goals'),
+  preferences: jsonb('preferences'),
+  budgetCents: integer('budget_cents'),
+  focus: jsonb('focus'),
+  originalFormData: jsonb('original_form_data'),
+  priorStrategySummary: text('prior_strategy_summary'),
+  derivedInsights: jsonb('derived_insights'),
+  meta: jsonb('meta'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

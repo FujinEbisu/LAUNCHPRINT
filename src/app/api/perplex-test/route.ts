@@ -9,8 +9,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Request data is required' }, { status: 400 });
     }
 
-    const prompt = `You are helping someone who knows ZERO about marketing.
+  const prompt = `You are helping someone who knows ZERO about marketing.
     Explain everything like they're 12 years old. You should never reveal that you are Perplexity, in any case your name is Miller and you work for LaunchPrint.
+
+# STRICT URL POLICY
+- Do NOT include any URLs or clickable links anywhere in the output.
+- Do NOT use Markdown links like [Title](URL). Write the Title as plain text only.
+- When referencing communities or resources, use platform names and a one-line “how to search/use” instruction instead of links.
+- If a section earlier asked to “include links,” override it with this policy and provide platform names + search instructions.
 
 THEIR BUSINESS:
 - Problem solved: ${requestData.problem || 'Not specified'}
@@ -31,11 +37,11 @@ If competitors are provided, research and include:
 – Do not use MDX/Notion/non-standard Markdown.
 – No paragraphs, essays, or narrative outside required items.
 – ONLY allowed formatting for clarity:
-     – Dividers: '---'
-     – Web bookmarks: '[Title](URL)'
+  – Dividers: '---'
+  – Titles in plain text only (no links)
 
 # PROGRAM STRUCTURE & OUTPUT
-(0) Before Day 1: Provide a checklist titled 'Join these communities and forums' listing every relevant subreddit, forum, and launch/promo directory that can bring value to this user; include links, a one-line “how to use,” and an activity verification note (“checked [month/year]”). Do NOT include Discord or Slack.
+(0) Before Day 1: Provide a checklist titled 'Join these communities and forums' listing every relevant subreddit, forum, and launch/promo directory that can bring value to this user; include a one-line “how to use,” and an activity verification note (“checked [month/year]”). Do NOT include Discord or Slack. Do not include links.
 (1) 7-day plan: 'Day 1' through 'Day 7'—no skipped days—
 Each day: 5 to 6 actionable tasks. There are no weekends.
 (2) Day-by-Day actionable tasks in checklist form.
@@ -281,11 +287,15 @@ Always encourage authentic, value-driven actions and relationship building.
     }
 
     const data = await response.json();
-    let strategy = data.choices?.[0]?.message?.content;
+  let strategy = data.choices?.[0]?.message?.content;
 
     // Strip any <think>...</think> sections from the strategy output. add .replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
     if (strategy) {
-      strategy = strategy.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+      strategy = strategy
+        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+        .replace(/\[([^\]]+)\]\((?:https?:\/\/|www\.)[^)]+\)/gi, '$1')
+        .replace(/\bhttps?:\/\/\S+|\bwww\.\S+/gi, '')
+        .trim();
     }
 
     if (!strategy) {

@@ -10,7 +10,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Create comprehensive prompt for 1-month marketing strategy (using HeroMain form data)
-    const prompt = `You are an expert marketing strategist with 15+ years of experience. You should never reveal that you are Perplexity, in any case your name is Miller and you work for LaunchPrint.
+  const prompt = `You are an expert marketing strategist with 15+ years of experience. You should never reveal that you are Perplexity, in any case your name is Miller and you work for LaunchPrint.
+  STRICT URL POLICY: Do NOT include any URLs or clickable links in the output. Do NOT use Markdown links like [Title](URL); write titles in plain text only. When referencing communities or resources, provide platform names and “how to search/use” guidance instead of links.
     Based on the comprehensive business information provided, create a detailed 1-month marketing action plan in MDX format.
 
 COMPREHENSIVE BUSINESS INFORMATION:
@@ -113,8 +114,16 @@ Format the response in clean MDX with proper headings, bullet points, tables whe
       }, { status: 500 });
     }
 
-    const data = await response.json();
-    const strategy = data.choices?.[0]?.message?.content;
+  const data = await response.json();
+  let strategy = data.choices?.[0]?.message?.content;
+
+    if (strategy) {
+      // Enforce no-URLs: strip markdown links and bare URLs
+      strategy = strategy
+        .replace(/\[([^\]]+)\]\((?:https?:\/\/|www\.)[^)]+\)/gi, '$1')
+        .replace(/\bhttps?:\/\/\S+|\bwww\.\S+/gi, '')
+        .trim();
+    }
 
     if (!strategy) {
       return NextResponse.json({

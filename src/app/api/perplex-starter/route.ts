@@ -17,6 +17,13 @@ Your job:
 – Create a step-by-step, hands-on, 1-month marketing program a complete beginner can follow without feeling overwhelmed.
 
 
+
+# STRICT URL POLICY
+- Do NOT include any URLs or clickable links anywhere in the output.
+- Do NOT use Markdown links like [Title](URL). Write the Title as plain text only.
+- When referencing communities or resources, use platform names and a one-line “how to search/use” instruction instead of links.
+- If a section earlier asked to “include links,” override it with this policy and provide platform names + search instructions.
+
 # PERSONALIZATION
 Use these Four Core Questions to build a specific, tailored strategy:
 – Who are you trying to help (and who should you ignore)? ${formData.who || 'Not provided'}
@@ -42,10 +49,10 @@ If competitors are provided, research and include:
 – No paragraphs, essays, or narrative outside required items.
 – ONLY allowed formatting for clarity:
      – Dividers: '---'
-     – Web bookmarks: '[Title](URL)'
+  – Titles in plain text only (no links)
 
 # PROGRAM STRUCTURE & OUTPUT
-(0) Before Day 1: Provide a checklist titled 'Join these communities and forums' listing every relevant subreddit, forum, LinkedIn, Facebook and launch/promo directory that can bring value to this user; include links, a one-line “how to use,” and an activity verification note (“checked [month/year]”). Do NOT include Discord or Slack.
+(0) Before Day 1: Provide a checklist titled 'Join these communities and forums' listing every relevant subreddit, forum, LinkedIn, Facebook and launch/promo directory that can bring value to this user; include a one-line “how to use” and an activity verification note (“checked [month/year]”). Do NOT include Discord or Slack. Do not include links.
 (1) 30-day plan: 'Day 1' through 'Day 30'—no skipped days—
 Each day: 5 to 6 actionable tasks. There are no weekends.
 (2) Week-by-week, day-by-day actionable tasks in checklist form.
@@ -1070,7 +1077,7 @@ Results Note
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minute timeout
 
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+  const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
@@ -1111,11 +1118,18 @@ Results Note
     }
 
     const data = await response.json();
-    let strategy = data.choices?.[0]?.message?.content;
+  let strategy = data.choices?.[0]?.message?.content;
 
     // Strip any <think>...</think> sections from the strategy output. add .replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
     if (strategy) {
-      strategy = strategy.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+      // Remove hidden reasoning and any URLs or Markdown links to enforce the no-URLs policy
+      strategy = strategy
+        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+        // Strip Markdown links [text](http://...) -> text
+        .replace(/\[([^\]]+)\]\((?:https?:\/\/|www\.)[^)]+\)/gi, '$1')
+        // Strip bare URLs (http, https, www)
+        .replace(/\bhttps?:\/\/\S+|\bwww\.\S+/gi, '')
+        .trim();
     }
 
     if (!strategy) {
