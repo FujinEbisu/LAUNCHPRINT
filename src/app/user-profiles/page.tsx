@@ -32,16 +32,32 @@ interface SubscriptionStatus {
 
 export default function UserProfilePage() {
   type Question = { label: string; name: string; bullets?: string[] };
+  interface FollowupForm {
+    outcomesSummary: string;
+    bestChannel: string;
+    worstChannel: string;
+    obstacles: string;
+    newGoals: string;
+    timePerDay: string;
+    budget: string;
+    businessMode: string;
+    hasPhysicalStore: string;
+    geography: string;
+    notes: string;
+  }
   const user = useUser();
   const router = useRouter();
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showStrategyModal, setShowStrategyModal] = useState(false);
+  const [showFollowupModal, setShowFollowupModal] = useState(false);
   const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
+  const [isGeneratingFollowup, setIsGeneratingFollowup] = useState(false);
   const [isCancellingSubscription, setIsCancellingSubscription] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [strategyUsage, setStrategyUsage] = useState({ used: 0, limit: 0 });
+  interface StrategyUsage { used: number; limit: number; isFollowupDue?: boolean; firstStrategyAt?: string | null }
+  const [strategyUsage, setStrategyUsage] = useState<StrategyUsage>({ used: 0, limit: 0 });
   const [openHintIndex, setOpenHintIndex] = useState<number | null>(null);
   const [showHeadlinesModal, setShowHeadlinesModal] = useState(false);
   const [isGeneratingHeadlines, setIsGeneratingHeadlines] = useState(false);
@@ -82,6 +98,20 @@ export default function UserProfilePage() {
     discovery: '',
   });
 
+  const [followupForm, setFollowupForm] = useState<FollowupForm>({
+    outcomesSummary: '', // What happened since last plan
+    bestChannel: '',     // What worked best and why
+    worstChannel: '',    // What didn’t work and why
+    obstacles: '',       // Biggest blockers you faced
+    newGoals: '',        // What you want next month
+    timePerDay: '',      // Minutes/day you can commit
+    budget: '',          // Monthly budget update
+    businessMode: '',    // product | service | mixed
+    hasPhysicalStore: '',// yes | no
+    geography: '',       // local | regional | national | global
+    notes: '',           // anything else worth knowing
+  });
+
   // Four Core Questions with guidance bullets for info bubble
 const coreQuestions: Question[] = [
 {
@@ -89,7 +119,8 @@ label: 'Who are you trying to help (and who should you ignore)?',
 name: 'who',
 bullets: [
 'What keeps them up at 3 AM',
-'Where they hang out and how they decide',
+'Where they hang out and how they decide (online + offline)',
+'If local: city/area and how far you can travel (miles/km)',
 'What makes them buy right now',
 'Top objections stopping them',
 'Who is NOT a fit (exclude on purpose)',
@@ -102,7 +133,7 @@ bullets: [
 'Clear transformation in 30 days or less',
 'Your unfair advantage vs. alternatives',
 'Simple proof it works (wins, screenshots, cases)',
-'Tangible results they’ll feel after buying',
+'Tangible results they’ll feel after buying (product or service)',
 'Risk reversal (guarantee, trial, easy refund)',
 ],
 },
@@ -114,6 +145,7 @@ bullets: [
 'Preferred channels for spend (Meta, Google, TikTok, LinkedIn)',
 'Target CPA/CAC and AOV/LTV (ballpark is fine)',
 'Attribution setup (pixels, conversions, CRM)',
+'Local/Offline budget (print, flyers, booths, events)',
 'Runway: how many months can you fund testing?',
 ],
 },
@@ -135,11 +167,86 @@ bullets: [
 'Step-by-step path from discover → buy → stay',
 'Content/touchpoints for each step',
 'Conversion tools (LP, email, DMs, retargeting)',
-'Remove friction (speed, clarity, trust)',
+'Remove friction (speed, clarity, trust, in-person flow if store)',
 'Measure and improve (one metric per step)',
 ],
 },
 ];
+
+  // Follow-up questions (monthly double-down)
+  const followupQuestions: Question[] = [
+    {
+      label: 'What happened since your last plan? (wins, replies, sales, foot traffic, calls)',
+      name: 'outcomesSummary',
+      bullets: [
+        'How many conversations, trials, or sales?',
+        'Any standout stories or objections?',
+        'What surprised you most?'
+      ],
+    },
+    {
+      label: 'What worked BEST and why?',
+      name: 'bestChannel',
+      bullets: [
+        'Which channel had the clearest signal?',
+        'What message/script resonated?',
+        'Any local/offline tactic that clicked?'
+      ],
+    },
+    {
+      label: 'What didn’t work? (cut or reframe)',
+      name: 'worstChannel',
+      bullets: [
+        'Which channel underperformed after 2–3 tries?',
+        'What part felt unnatural or too slow?'
+      ],
+    },
+    {
+      label: 'Biggest blockers to progress',
+      name: 'obstacles',
+      bullets: [
+        'Time, confidence, tools, access, seasonality',
+        'What kept you from executing consistently?'
+      ],
+    },
+    {
+      label: 'New goals for the next 30 days',
+      name: 'newGoals',
+      bullets: [
+        'Quantify: conversations, meetings, sales, visits',
+        'Which audience to prioritize now?'
+      ],
+    },
+    {
+      label: 'Time per day you can commit (realistically)',
+      name: 'timePerDay',
+    },
+    {
+      label: 'Monthly budget (updated)',
+      name: 'budget',
+    },
+    {
+      label: 'Your business mode',
+      name: 'businessMode',
+      bullets: [
+        'product | service | mixed',
+      ],
+    },
+    {
+      label: 'Do you have a physical store?',
+      name: 'hasPhysicalStore',
+      bullets: ['yes | no'],
+    },
+    {
+      label: 'Geography focus',
+      name: 'geography',
+      bullets: ['local | regional | national | global'],
+    },
+    {
+      label: 'Anything else we should know?',
+      name: 'notes',
+    },
+  ];
 
   // Use the same Four Core Questions across tiers for a focused, high-signal brief
   const freeQuestions: Question[] = coreQuestions;
@@ -175,6 +282,9 @@ bullets: [
         return 'Create Your Marketing Strategy';
     }
   };
+
+  const getFollowupModalTitle = () => 'Create Your Monthly Follow-up Strategy';
+  const getFollowupModalSubtitle = () => 'Tell us what happened this month so we can double down on what works';
 
   const getModalSubtitle = () => {
     return 'Answer the Four Core Questions to generate your strategy';
@@ -245,6 +355,16 @@ bullets: [
 
   const handleHeadlinesFormChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLSelectElement>) => {
     setHeadlinesForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleFollowupFormChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFollowupForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  // Helper to safely read follow-up values
+  const getFollowupValue = (name: string) => {
+    const key = name as keyof FollowupForm;
+    return (followupForm[key] as string) ?? '';
   };
 
   /* THIS IS THE LOGIC IN CHARGE TO REDIRECT THE FORM TO EACH CORRESPONDING API/PERPLEX-"TIER" */
@@ -327,6 +447,56 @@ bullets: [
     }
   };
 
+  const handleFollowupFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowFollowupModal(false);
+    setIsGeneratingFollowup(true);
+
+    try {
+      const response = await fetch('/api/perplex-starter-followup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          feedback: followupForm,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        try {
+          await fetch('/api/strategy-usage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user?.id,
+              problem: 'Follow-up strategy',
+              strategy: data.strategy,
+              tier: subscriptionStatus?.currentTier,
+            }),
+          });
+          const usageRes = await fetch(`/api/strategy-usage?userId=${user?.id}`);
+          const usageData = await usageRes.json();
+          if (usageRes.ok) setStrategyUsage(usageData);
+        } catch (usageError) {
+          console.error('Error recording follow-up usage:', usageError);
+        }
+
+        localStorage.setItem('generatedStrategy', data.strategy);
+        localStorage.setItem('followupFormData', JSON.stringify(followupForm));
+        router.push('/chat-rooms/general-help');
+      } else {
+        setIsGeneratingFollowup(false);
+        alert(data.error || 'Failed to generate follow-up strategy. Please try again.');
+      }
+    } catch (err) {
+      console.error('Follow-up generation error:', err);
+      setIsGeneratingFollowup(false);
+      alert('Something went wrong. Please try again.');
+    }
+  };
+
   const handleHeadlinesFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsGeneratingHeadlines(true);
@@ -382,10 +552,18 @@ bullets: [
   };
 
   const getButtonText = () => {
+    const followup = strategyUsage?.isFollowupDue === true;
+    const limitReached = strategyUsage.used >= strategyUsage.limit;
+    if (limitReached) return 'Monthly Limit Reached';
     if (subscriptionStatus?.currentTier === 'free') {
-      return strategyUsage.used >= strategyUsage.limit ? 'Monthly Limit Reached' : 'Create New Strategy';
+      return followup ? 'Generate Follow-up Strategy' : 'Create New Strategy';
     }
-    return `Create New Strategy (${strategyUsage.used}/${strategyUsage.limit} used)`;
+    return followup ? 'Generate Follow-up Strategy' : `Create New Strategy (${strategyUsage.used}/${strategyUsage.limit} used)`;
+  };
+
+  const handleMainStrategyClick = () => {
+    const followup = strategyUsage?.isFollowupDue === true;
+    if (followup) setShowFollowupModal(true); else setShowStrategyModal(true);
   };
 
   useEffect(() => {
@@ -433,12 +611,14 @@ bullets: [
       }
     };
 
-    fetchData();
+  fetchData();
 
     return () => {
       mounted = false;
     };
   }, [user, router]);
+
+  // Follow-up is determined by server via strategy-usage.isFollowupDue
 
   if (loading || isSigningOut) {
     return (
@@ -497,26 +677,24 @@ bullets: [
         </div>
 
         {/* Access Areas */}
-        <div className="text-center">
+        <div className="text-center max-w-4xl justify-self-center">
           {/* Buttons Container */}
           <div className="mb-8">
-            {subscriptionStatus.currentTier !== 'free' ? (
+      {subscriptionStatus.currentTier !== 'free' ? (
               /* Paid Users: Three buttons in a row */
               <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                 {/* Create New Strategy Button */}
                 <div className="text-center">
                   <button
-                    className={`btn-square-accent text-xl px-8 py-4 ${
-                      !canCreateStrategy() ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                    onClick={() => setShowStrategyModal(true)}
-                    disabled={!canCreateStrategy()}
-                    data-umami-event="create-strategy-button"
+        className={`btn-square-accent text-lg px-8 py-4 ${!canCreateStrategy() ? 'opacity-50 cursor-not-allowed' : ''}`}
+        onClick={handleMainStrategyClick}
+        disabled={!canCreateStrategy()}
+        data-umami-event="main-strategy-button"
                   >
-                    {getButtonText()}
+        {getButtonText()}
                   </button>
                   <p className="text-black mt-2 text-sm">
-                    Resets monthly • All strategies saved to your account
+        Resets monthly • All strategies saved to your account
                   </p>
                 </div>
 
@@ -556,9 +734,9 @@ bullets: [
                     className={`btn-square-accent text-xl px-8 py-4 ${
                       !canCreateStrategy() ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
-                    onClick={() => setShowStrategyModal(true)}
+                    onClick={handleMainStrategyClick}
                     disabled={!canCreateStrategy()}
-                    data-umami-event="create-strategy-button-free-tier"
+                    data-umami-event="main-strategy-button-free-tier"
                   >
                     {getButtonText()}
                   </button>
@@ -963,6 +1141,108 @@ bullets: [
         </div>
       )}
 
+      {/* Follow-up Strategy Modal */}
+      {showFollowupModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className={`bg-[var(--secondary)] border-4 border-[var(--primary)] shadow-hard w-full max-h-[90vh] overflow-y-auto ${
+            subscriptionStatus?.currentTier === 'pro' ? 'max-w-6xl' :
+            subscriptionStatus?.currentTier === 'starter' ? 'max-w-5xl' : 'max-w-3xl'
+          }`}>
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className={`font-bold text-[var(--primary)] mb-2 ${
+                    subscriptionStatus?.currentTier === 'pro' ? 'text-3xl' :
+                    subscriptionStatus?.currentTier === 'starter' ? 'text-2xl' : 'text-xl'
+                  }`}>
+                    {getFollowupModalTitle()}
+                  </h2>
+                  <p className={`text-[var(--muted)] ${
+                    subscriptionStatus?.currentTier === 'pro' ? 'text-lg' : 'text-sm'
+                  }`}>
+                    {getFollowupModalSubtitle()}
+                  </p>
+                  <div className="inline-block px-3 py-1 mt-2 bg-[var(--primary)] text-white font-bold text-sm shadow-hard">
+                    {getTierLabel()}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowFollowupModal(false)}
+                  className="text-[var(--primary)] hover:bg-[var(--secondary)] hover:shadow-hard p-2 font-bold text-xl border-2 border-transparent hover:border-[var(--primary)]"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleFollowupFormSubmit}>
+                <div className={`gap-4 mb-6 ${
+                  subscriptionStatus?.currentTier === 'pro' ? 'grid grid-cols-1 md:grid-cols-3' :
+                  subscriptionStatus?.currentTier === 'starter' ? 'grid grid-cols-1 md:grid-cols-2' :
+                  'grid grid-cols-1'
+                }`}>
+                  {followupQuestions.map((question: Question, index) => (
+                    <div key={index} className={`mb-4 ${
+                      subscriptionStatus?.currentTier === 'free' ? 'col-span-1' : ''
+                    }`}>
+                      <label className="block text-[var(--primary)] font-medium mb-2">
+                        <span className="text-sm text-[var(--muted)] mr-2">{index + 1}.</span>
+                        {question.label}
+                        {question.bullets && (
+                          <span className="relative inline-block ml-2 align-middle group">
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center w-7 h-7 border-2 border-[var(--primary)] text-[var(--primary)] font-bold text-xs cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-[var(--accent2)]"
+                              aria-label="More info"
+                              onClick={() => setOpenHintIndex(openHintIndex === index ? null : index)}
+                            >
+                              ?
+                            </button>
+                            <span
+                              className={`absolute z-50 ${openHintIndex === index ? 'block' : 'hidden'} md:group-hover:block bg-[var(--secondary)] border-2 border-[var(--primary)] p-3 shadow-hard w-72 max-w-[90vw] left-1/2 -translate-x-1/2 mt-2`}
+                            >
+                              <ul className="list-disc pl-5 text-sm text-[var(--primary)]">
+                                {question.bullets?.map((b: string, i: number) => (
+                                  <li key={i}>{b}</li>
+                                ))}
+                              </ul>
+                            </span>
+                          </span>
+                        )}
+                      </label>
+                      <textarea
+                        name={question.name}
+                        value={getFollowupValue(question.name)}
+                        onChange={handleFollowupFormChange}
+                        className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)] resize-none"
+                        rows={3}
+                        placeholder={'Provide detailed information...'}
+                        required
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex justify-end text-sm text-[var(--primary)] mb-2">
+                    <span>{followupQuestions.length} questions</span>
+                  </div>
+                  <div className="w-full bg-[var(--secondary)] border-2 border-[var(--primary)] h-2">
+                    <div className="bg-[var(--primary)] h-full transition-all duration-300" style={{ width: '100%' }} />
+                  </div>
+                </div>
+
+                <div className="flex gap-4 justify-end">
+                  <button type="button" onClick={() => setShowFollowupModal(false)} className="btn-square">Cancel</button>
+                  <button type="submit" className="btn-square-accent px-8 py-3" data-umami-event="generate-followup-strategy-button">
+                    Generate Follow-up Strategy
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
        {/* Account Actions - Full Width Row Layout */}
           <div className="max-w-4xl mb-2 mx-auto grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-6">
             {/* Plan Badge - Now Full Width Button */}
@@ -1019,6 +1299,20 @@ bullets: [
             <p className="text-[var(--primary)] text-sm mt-2">
               This may take a moment
             </p>
+          </div>
+        </div>
+      )}
+
+      {isGeneratingFollowup && (
+        <div className="fixed inset-0 bg-[var(--primary)] bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-[var(--secondary)] border-4 border-[var(--primary)] shadow-hard p-8 text-center">
+            <div className="flex gap-2 mb-6 justify-center">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="w-4 h-4 bg-[var(--primary)] animate-pulse shadow-hard" style={{ animationDelay: `${i * 0.2}s`, animationDuration: '1s' }} />
+              ))}
+            </div>
+            <p className="text-[var(--primary)] font-medium text-lg">Creating your monthly follow-up strategy...</p>
+            <p className="text-[var(--primary)] text-sm mt-2">This may take a moment</p>
           </div>
         </div>
       )}
