@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, boolean, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, integer, boolean, jsonb, uniqueIndex } from 'drizzle-orm/pg-core';
 
 // Users table for Better Auth (matches Better Auth requirements)
 export const users = pgTable('users', {
@@ -103,4 +103,28 @@ export const strategyFeedback = pgTable('strategy_feedback', {
   meta: jsonb('meta'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Email events table for idempotency and audit
+export const emailEvents = pgTable('email_events', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+  email: text('email').notNull(),
+  template: text('template').notNull(),
+  key: text('key').notNull(), // idempotency key (e.g. invoice_123_payment_succeeded_user)
+  meta: jsonb('meta'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  keyIdx: uniqueIndex('email_events_key_unique').on(table.key)
+}));
+
+// Drip schedule table for automated sequence
+export const dripSchedule = pgTable('drip_schedule', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  dayIndex: integer('day_index').notNull(), // 0,1,2,...
+  template: text('template').notNull(),
+  scheduledFor: timestamp('scheduled_for').notNull(),
+  sentAt: timestamp('sent_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });

@@ -25,6 +25,8 @@ import {
 import { db } from '@/lib/neon';
 import { subscriptions } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
+import { sendTemplate, sendInternal, classifyPlan, alreadySent } from '@/lib/mailer';
+import { STRIPE_PRICE_IDS } from '@/lib/subscription-manager';
 
 // Initialize Stripe with secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -33,6 +35,16 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 // Webhook endpoint secret for signature verification
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
+
+function extractSubscriptionId(invoice: Stripe.Invoice): string | undefined {
+  // Stripe typings sometimes omit subscription on expanded objects; access defensively
+  const raw: unknown = invoice as unknown as { subscription?: unknown }
+  if (raw && typeof raw === 'object' && 'subscription' in raw) {
+    const val = (raw as { subscription?: unknown }).subscription
+    if (typeof val === 'string') return val
+  }
+  return undefined
+}
 
 /**
  * Main webhook handler
@@ -144,16 +156,52 @@ async function handleSubscriptionEvent(subscription: Stripe.Subscription) {
       console.log(`Removed free tier subscription for user ${userId} - upgrading to paid`);
     }
 
+    // Fetch previous state (if any) to detect plan change
+    let oldPlan: string | undefined
+    if (userId) {
+      const existing = await db.select().from(subscriptions)
+        .where(and(eq(subscriptions.userId, userId), eq(subscriptions.stripeSubscriptionId, subscription.id)))
+        .limit(1)
+      if (existing.length) oldPlan = existing[0].stripePriceId || undefined
+    }
+
+    const newPriceId = subscription.items.data[0]?.price?.id
+
     await updateNeonSubscription({
       stripeCustomerId: subscription.customer as string,
       stripeSubscriptionId: subscription.id,
-      stripePriceId: subscription.items.data[0]?.price?.id,
+      stripePriceId: newPriceId,
       status: subscription.status,
       currentPeriodEnd: subscriptionWithPeriod.current_period_end
         ? new Date(subscriptionWithPeriod.current_period_end * 1000)
         : undefined,
       userId: userId || undefined,
     });
+
+    // Plan change emails
+    if (userId && oldPlan && newPriceId && oldPlan !== newPriceId) {
+      try {
+        const cust = await stripe.customers.retrieve(subscription.customer as string) as Stripe.Customer
+        const email = typeof cust.email === 'string' ? cust.email : undefined
+        if (email) {
+          const oldTier = classifyPlan(oldPlan)
+          const newTier = classifyPlan(newPriceId)
+          if (oldTier !== newTier) {
+            const priceMap = { starterMonthly: STRIPE_PRICE_IDS.STARTER_MONTHLY, proMonthly: STRIPE_PRICE_IDS.PRO_MONTHLY }
+            const keyUser = `sub_${subscription.id}_planchange_${oldTier}_${newTier}_user`
+            if (!(await alreadySent(keyUser))) {
+              await sendTemplate(email, 'planChanged', { oldPlan: oldTier, newPlan: newTier, priceMap }, userId, { key: keyUser })
+            }
+            const keyInternal = `sub_${subscription.id}_planchange_${oldTier}_${newTier}_internal`
+            if (!(await alreadySent(keyInternal))) {
+              await sendInternal('internalPlanChange', { email, oldPlan: oldTier, newPlan: newTier }, { key: keyInternal })
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Plan change email error:', e)
+      }
+    }
 
     console.log('Subscription event processed:', subscription.id);
   } catch (error) {
@@ -169,6 +217,26 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   try {
     await deleteNeonSubscription(subscription.id);
     console.log('Subscription deleted:', subscription.id);
+    try {
+      const customerId = subscription.customer as string
+      const userId = await getUserIdFromStripeCustomer(customerId)
+      const cust = await stripe.customers.retrieve(customerId) as Stripe.Customer
+      const email = typeof cust.email === 'string' ? cust.email : undefined
+      if (email) {
+        const plan = classifyPlan(subscription.items.data[0]?.price?.id)
+        const priceMap = { starterMonthly: STRIPE_PRICE_IDS.STARTER_MONTHLY, proMonthly: STRIPE_PRICE_IDS.PRO_MONTHLY }
+        const keyUser = `sub_${subscription.id}_canceled_user`
+        if (!(await alreadySent(keyUser))) {
+          await sendTemplate(email, 'subscriptionCanceled', { plan, priceMap }, userId || undefined, { key: keyUser })
+        }
+        const keyInternal = `sub_${subscription.id}_canceled_internal`
+        if (!(await alreadySent(keyInternal))) {
+          await sendInternal('internalCancellation', { email, plan }, { key: keyInternal })
+        }
+      }
+    } catch (e) {
+      console.error('Error sending cancellation emails:', e)
+    }
   } catch (error) {
     console.error('Error handling subscription deletion:', error);
   }
@@ -180,7 +248,29 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
  */
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   console.log('Payment succeeded for invoice:', invoice.id)
-  // Additional logic for successful payments can be added here
+  try {
+  const subscriptionId = extractSubscriptionId(invoice)
+    if (!subscriptionId) return
+    const sub = await stripe.subscriptions.retrieve(subscriptionId)
+    const customerId = sub.customer as string
+    const userId = await getUserIdFromStripeCustomer(customerId)
+  const cust = await stripe.customers.retrieve(customerId) as Stripe.Customer
+  const email = invoice.customer_email || (typeof cust.email === 'string' ? cust.email : undefined)
+    if (!email) return
+    const priceId = sub.items.data[0]?.price?.id
+    const plan = classifyPlan(priceId)
+    const priceMap = { starterMonthly: STRIPE_PRICE_IDS.STARTER_MONTHLY, proMonthly: STRIPE_PRICE_IDS.PRO_MONTHLY }
+    const keyUser = `invoice_${invoice.id}_payment_succeeded_user`
+    if (!(await alreadySent(keyUser))) {
+      await sendTemplate(email, 'subscriptionActive', { plan, priceMap }, userId || undefined, { key: keyUser })
+    }
+    const keyInternal = `invoice_${invoice.id}_payment_succeeded_internal`
+    if (!(await alreadySent(keyInternal))) {
+      await sendInternal('internalSaleNotice', { email, plan, amount: invoice.total ? `$${(invoice.total/100).toFixed(2)}` : undefined }, { key: keyInternal })
+    }
+  } catch (e) {
+    console.error('Error in handlePaymentSucceeded mailing:', e)
+  }
 }
 
 /**
@@ -189,7 +279,30 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
  */
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
   console.log('Payment failed for invoice:', invoice.id)
-  // Additional logic for failed payments can be added here
+  try {
+  const subscriptionId = extractSubscriptionId(invoice)
+    if (!subscriptionId) return
+    const sub = await stripe.subscriptions.retrieve(subscriptionId)
+    const customerId = sub.customer as string
+    const userId = await getUserIdFromStripeCustomer(customerId)
+  const cust = await stripe.customers.retrieve(customerId) as Stripe.Customer
+  const email = invoice.customer_email || (typeof cust.email === 'string' ? cust.email : undefined)
+    if (!email) return
+    const priceId = sub.items.data[0]?.price?.id
+    const plan = classifyPlan(priceId)
+    const priceMap = { starterMonthly: STRIPE_PRICE_IDS.STARTER_MONTHLY, proMonthly: STRIPE_PRICE_IDS.PRO_MONTHLY }
+    const reason = invoice.status
+    const keyUser = `invoice_${invoice.id}_payment_failed_user`
+    if (!(await alreadySent(keyUser))) {
+      await sendTemplate(email, 'paymentFailed', { plan, reason, priceMap }, userId || undefined, { key: keyUser })
+    }
+    const keyInternal = `invoice_${invoice.id}_payment_failed_internal`
+    if (!(await alreadySent(keyInternal))) {
+      await sendInternal('internalPaymentFailed', { email, plan, reason }, { key: keyInternal })
+    }
+  } catch (e) {
+    console.error('Error in handlePaymentFailed mailing:', e)
+  }
 }
 
 /**
