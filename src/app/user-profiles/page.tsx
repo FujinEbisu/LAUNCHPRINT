@@ -44,6 +44,12 @@ export default function UserProfilePage() {
     hasPhysicalStore: string;
     geography: string;
     notes: string;
+  core_who?: string;
+  core_what?: string;
+  core_when?: string;
+  core_how?: string;
+  core_budget?: string;
+  annotatedStrategy?: string;
   }
   const user = useUser();
   const router = useRouter();
@@ -62,6 +68,7 @@ export default function UserProfilePage() {
   const [showHeadlinesModal, setShowHeadlinesModal] = useState(false);
   const [isGeneratingHeadlines, setIsGeneratingHeadlines] = useState(false);
   const [generatedHeadlines, setGeneratedHeadlines] = useState<string | null>(null);
+  const [openCoreHint, setOpenCoreHint] = useState<string | null>(null);
   const [headlinesForm, setHeadlinesForm] = useState({
     product: '',
     targetAudience: '',
@@ -453,12 +460,42 @@ bullets: [
     setIsGeneratingFollowup(true);
 
     try {
+      // Extract annotated + core fields out of followupForm for API contract
+      const f: FollowupForm = followupForm;
+      const annotatedStrategy = f.annotatedStrategy;
+      const core_who = f.core_who;
+      const core_what = f.core_what;
+      const core_when = f.core_when;
+      const core_how = f.core_how;
+      const core_budget = f.core_budget;
+      const rawFeedback = {
+        outcomesSummary: f.outcomesSummary,
+        bestChannel: f.bestChannel,
+        worstChannel: f.worstChannel,
+        obstacles: f.obstacles,
+        newGoals: f.newGoals,
+        timePerDay: f.timePerDay,
+        budget: f.budget,
+        businessMode: f.businessMode,
+        hasPhysicalStore: f.hasPhysicalStore,
+        geography: f.geography,
+        notes: f.notes,
+      };
+      const corePayload = {
+        who: core_who || '',
+        what: core_what || '',
+        when: core_when || '',
+        how: core_how || '',
+        budget: core_budget || ''
+      };
       const response = await fetch('/api/perplex-starter-followup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user?.id,
-          feedback: followupForm,
+          annotatedStrategy: annotatedStrategy || '',
+            core: corePayload,
+          feedback: rawFeedback,
         }),
       });
 
@@ -556,10 +593,11 @@ bullets: [
     const limitReached = strategyUsage.used >= strategyUsage.limit;
     if (limitReached) return 'Monthly Limit Reached';
     if (subscriptionStatus?.currentTier === 'free') {
-      return followup ? 'Generate Follow-up Strategy' : 'Create New Strategy';
+      return followup ? `Generate Follow-up Strategy (${strategyUsage.used}/${strategyUsage.limit})` : 'Create New Strategy';
     }
-    return followup ? 'Generate Follow-up Strategy' : `Create New Strategy (${strategyUsage.used}/${strategyUsage.limit} used)`;
+    return followup ? `Generate Follow-up Strategy (${strategyUsage.used}/${strategyUsage.limit})` : `Create New Strategy (${strategyUsage.used}/${strategyUsage.limit} used)`;
   };
+
 
   const handleMainStrategyClick = () => {
     const followup = strategyUsage?.isFollowupDue === true;
@@ -1165,6 +1203,11 @@ bullets: [
                   <div className="inline-block px-3 py-1 mt-2 bg-[var(--primary)] text-white font-bold text-sm shadow-hard">
                     {getTierLabel()}
                   </div>
+                  <div className="mt-4 p-3 border-2 border-[var(--primary)] bg-[var(--secondary)] text-[var(--primary)] text-xs leading-relaxed shadow-hard">
+                    <strong>How to prepare:</strong> Copy the strategy you actually worked from (with your own checkmarks) and paste it below. Mark completed tasks with [x] or [X], partial with [-] or [~], untouched leave as [ ]. You can annotate quick results inline.<br/>
+                    <span className="font-mono">Example snippet:</span><br/>
+                    <span className="font-mono">- [x] Day 1: Publish intro reel (result: 850 views, 12 saves)\n- [-] Day 2: 5 cold emails (sent 3; no replies yet)\n- [ ] Day 3: Local flyer drop (skipped due to rain)</span>
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowFollowupModal(false)}
@@ -1175,6 +1218,112 @@ bullets: [
               </div>
 
               <form onSubmit={handleFollowupFormSubmit}>
+                {/* Core fields re-ask */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  {/* WHO */}
+                  <div className="col-span-1 relative">
+                    <label className="flex text-[var(--primary)] font-medium mb-2 items-center gap-2">Who
+                      <button type="button" aria-label="Who help" className="w-6 h-6 border-2 border-[var(--primary)] text-[var(--primary)] text-xs font-bold flex items-center justify-center" onClick={()=>setOpenCoreHint(openCoreHint==='who'?null:'who')}>?</button>
+                    </label>
+                    {openCoreHint==='who' && (
+                      <div className="absolute z-50 bg-[var(--secondary)] border-2 border-[var(--primary)] p-3 text-xs shadow-hard w-72 max-w-[90vw]">
+                        <ul className="list-disc pl-4 space-y-1">
+                          <li>Niche: e.g. &quot;first-time Etsy sellers&quot;</li>
+                          <li>Primary pain @ 3AM</li>
+                          <li>Where they already gather (online + offline)</li>
+                          <li>Who is NOT a fit (exclude)</li>
+                        </ul>
+                        <div className="mt-2 font-mono">Example: &quot;Local vegan bakery owners in Austin launching first wholesale line; not hobby bakers&quot;</div>
+                      </div>
+                    )}
+                    <textarea name="core_who" value={followupForm.core_who || ''} onChange={(e)=>setFollowupForm(p=>({...p, core_who:e.target.value}))} className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)] resize-none" rows={2} placeholder="e.g. Solo fitness coaches w/ 0–5 clients (exclude bodybuilders)" required />
+                  </div>
+                  {/* WHAT */}
+                  <div className="col-span-1 relative">
+                    <label className="flex text-[var(--primary)] font-medium mb-2 items-center gap-2">What (unique problem solved)
+                      <button type="button" aria-label="What help" className="w-6 h-6 border-2 border-[var(--primary)] text-[var(--primary)] text-xs font-bold flex items-center justify-center" onClick={()=>setOpenCoreHint(openCoreHint==='what'?null:'what')}>?</button>
+                    </label>
+                    {openCoreHint==='what' && (
+                      <div className="absolute z-50 bg-[var(--secondary)] border-2 border-[var(--primary)] p-3 text-xs shadow-hard w-72 max-w-[90vw]">
+                        <ul className="list-disc pl-4 space-y-1">
+                          <li>Clear transformation (30–90d)</li>
+                          <li>Why current alternatives fail</li>
+                          <li>Your unfair advantage / mechanism</li>
+                          <li>Simple social proof (1 line)</li>
+                        </ul>
+                        <div className="mt-2 font-mono">Example: &quot;Turn unused podcast clips into 15 daily vertical videos automatically&quot;</div>
+                      </div>
+                    )}
+                    <textarea name="core_what" value={followupForm.core_what || ''} onChange={(e)=>setFollowupForm(p=>({...p, core_what:e.target.value}))} className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)] resize-none" rows={2} placeholder="e.g. Automates X so they achieve Y without Z" required />
+                  </div>
+                  {/* WHEN */}
+                  <div className="col-span-1 relative">
+                    <label className="flex text-[var(--primary)] font-medium mb-2 items-center gap-2">When (urgency / timing)
+                      <button type="button" aria-label="When help" className="w-6 h-6 border-2 border-[var(--primary)] text-[var(--primary)] text-xs font-bold flex items-center justify-center" onClick={()=>setOpenCoreHint(openCoreHint==='when'?null:'when')}>?</button>
+                    </label>
+                    {openCoreHint==='when' && (
+                      <div className="absolute z-50 bg-[var(--secondary)] border-2 border-[var(--primary)] p-3 text-xs shadow-hard w-72 max-w-[90vw]">
+                        <ul className="list-disc pl-4 space-y-1">
+                          <li>Trigger events (launch, season)</li>
+                          <li>Deadlines or renewals</li>
+                          <li>Why NOW vs later</li>
+                        </ul>
+                        <div className="mt-2 font-mono">Example: &quot;Need traction before Q4 gifting season&quot;</div>
+                      </div>
+                    )}
+                    <textarea name="core_when" value={followupForm.core_when || ''} onChange={(e)=>setFollowupForm(p=>({...p, core_when:e.target.value}))} className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)] resize-none" rows={2} placeholder="e.g. Before demo day / seasonal launch / hitting churn cliff" required />
+                  </div>
+                  {/* HOW */}
+                  <div className="col-span-1 relative">
+                    <label className="flex text-[var(--primary)] font-medium mb-2 items-center gap-2">How (conversion mechanism)
+                      <button type="button" aria-label="How help" className="w-6 h-6 border-2 border-[var(--primary)] text-[var(--primary)] text-xs font-bold flex items-center justify-center" onClick={()=>setOpenCoreHint(openCoreHint==='how'?null:'how')}>?</button>
+                    </label>
+                    {openCoreHint==='how' && (
+                      <div className="absolute z-50 bg-[var(--secondary)] border-2 border-[var(--primary)] p-3 text-xs shadow-hard w-72 max-w-[90vw]">
+                        <ul className="list-disc pl-4 space-y-1">
+                          <li>Primary conversion path (call, landing, in-store)</li>
+                          <li>Key trust accelerators (trial, guarantee)</li>
+                          <li>Follow-up loop (DM, email sequence)</li>
+                        </ul>
+                        <div className="mt-2 font-mono">Example: &quot;Short Loom &gt; 15-min qualifying call &gt; proposal same day&quot;</div>
+                      </div>
+                    )}
+                    <textarea name="core_how" value={followupForm.core_how || ''} onChange={(e)=>setFollowupForm(p=>({...p, core_how:e.target.value}))} className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)] resize-none" rows={2} placeholder="e.g. Free audit -> DM follow-up -> booking link" required />
+                  </div>
+                  {/* BUDGET */}
+                  <div className="col-span-1 relative">
+                    <label className="flex text-[var(--primary)] font-medium mb-2 items-center gap-2">Budget (monthly)
+                      <button type="button" aria-label="Budget help" className="w-6 h-6 border-2 border-[var(--primary)] text-[var(--primary)] text-xs font-bold flex items-center justify-center" onClick={()=>setOpenCoreHint(openCoreHint==='budget'?null:'budget')}>?</button>
+                    </label>
+                    {openCoreHint==='budget' && (
+                      <div className="absolute z-50 bg-[var(--secondary)] border-2 border-[var(--primary)] p-3 text-xs shadow-hard w-72 max-w-[90vw]">
+                        <ul className="list-disc pl-4 space-y-1">
+                          <li>Give a range or exact number</li>
+                          <li>Breakdown (ads / tools / printing)</li>
+                          <li>If $0 say &quot;0 (sweat only)&quot;</li>
+                        </ul>
+                        <div className="mt-2 font-mono">Example: &quot;$120 (ads 80 / tools 40)&quot;</div>
+                      </div>
+                    )}
+                    <textarea name="core_budget" value={followupForm.core_budget || ''} onChange={(e)=>setFollowupForm(p=>({...p, core_budget:e.target.value}))} className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)] resize-none" rows={2} placeholder="e.g. 0 / 75 / 250 (ads vs tools)" />
+                  </div>
+                </div>
+
+                {/* Annotated previous strategy paste */}
+                <div className="mb-8">
+                  <label className="text-[var(--primary)] font-bold mb-2 flex items-center gap-2">
+                    PASTE YOUR PREVIOUS STRATEGY WITH PROGRESS MARKS
+                    <span className="w-6 h-6 text-xs font-bold border-2 border-[var(--primary)] flex items-center justify-center cursor-default" title="Paste the exact strategy you executed. Keep original checklist lines. Mark each task: [x]/[X]/[✔]=done, [-]/[~]=partial, [ ]=not done. Add quick inline result notes e.g. (12 signups) so the follow-up can double-down or cut intelligently.">?</span>
+                  </label>
+                  <textarea
+                    name="annotatedStrategy"
+                    value={followupForm.annotatedStrategy || ''}
+                    onChange={(e) => setFollowupForm(prev => ({ ...prev, annotatedStrategy: e.target.value }))}
+                    className="w-full p-3 border-2 border-[var(--primary)] focus:outline-none focus:border-[var(--accent2)] focus:text-[var(--primary)] resize-y min-h-[240px] font-mono text-xs leading-snug"
+                    placeholder={`Example:\n- [x] Day 1: Publish intro reel (850 views / 12 saves)\n- [-] Day 2: Send 5 cold emails (sent 3; no replies)\n- [ ] Day 3: Local flyer drop\n- [x] Day 4: Customer interview (pain: onboarding confusion)\n...`}
+                    required
+                  />
+                </div>
                 <div className={`gap-4 mb-6 ${
                   subscriptionStatus?.currentTier === 'pro' ? 'grid grid-cols-1 md:grid-cols-3' :
                   subscriptionStatus?.currentTier === 'starter' ? 'grid grid-cols-1 md:grid-cols-2' :
@@ -1234,7 +1383,7 @@ bullets: [
                 <div className="flex gap-4 justify-end">
                   <button type="button" onClick={() => setShowFollowupModal(false)} className="btn-square">Cancel</button>
                   <button type="submit" className="btn-square-accent px-8 py-3" data-umami-event="generate-followup-strategy-button">
-                    Generate Follow-up Strategy
+                    Generate Follow-up Strategy ({strategyUsage.used}/{strategyUsage.limit})
                   </button>
                 </div>
               </form>
