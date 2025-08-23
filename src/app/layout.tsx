@@ -3,6 +3,8 @@ import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "../stack";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next"
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,6 +46,7 @@ export default function RootLayout({
         <meta name="twitter:description" content="Get a step-by-step marketing strategy, launch checklist, and community outreach plan. Built for beginners and indie hackers." />
         <meta name="twitter:image" content="https://i.postimg.cc/7ZwPLVgJ/Twitter-SM.png" />
         <script defer src="https://cloud.umami.is/script.js" data-website-id="fafce664-362a-4c80-8f7c-a8c2fbe30abd"></script>
+        <Analytics />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen border-8 border-[var(--primary)]`}
