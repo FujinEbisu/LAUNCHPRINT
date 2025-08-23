@@ -74,6 +74,7 @@ export function PricingSection({}: PricingSectionProps) {
       description: `Perfect if you're still not sure this works`,
       features: [
         '1 marketing strategy per month',
+        'No marketing storage: you loose your strategie after closing modal or refreshing',
       ] as Array<string | { name: string }>,
       popular: false,
       buttonText: 'Current Plan',
