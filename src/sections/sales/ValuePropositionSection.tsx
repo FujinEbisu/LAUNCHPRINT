@@ -38,7 +38,7 @@ export function ValuePropositionSection() {
               </div>
 
               <h2 className="text-3xl md:text-4xl font-bold text-[var(--primary)] mb-6 leading-tight">
-                Stop Wasting Money on Marketing That Doesn&apos;t Work
+                Frustrated by Marketing That Wastes Your Money? Get a Step-by-Step Plan Built for Builders Who Hate Marketing—See Real Results, Even on a Small Budget!
                 <span className="text-black block">A Marketing Plan That Actually Makes Sense for Builders Who Hate Marketing</span>
               </h2>
 

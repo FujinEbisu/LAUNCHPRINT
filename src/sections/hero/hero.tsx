@@ -15,11 +15,11 @@ type CopywritingItem = {
 const COMPANY_NAME = 'LaunchPrint';
 
 const copywriting: CopywritingItem[] = [
-  { callout: "Built for Beginner entrepreneurs", name: "for-beginners" },
-  { callout: "Zero marketing Experience? Tight Budget? That’s Exactly Who This Tool Is For", name: "zero-marketing-exp" },
-  { callout: "For First-Time Founders Only. No Budget? No Problem. This Is Your Starting Line", name: "first-time-founders" },
-  { callout: "New to Marketing? You’re Exactly Who I Built This For", name: "new-to-marketing" },
-  { callout: "Tired of Theory? Built for First-Timers Who Want Real Outcomes", name: "tired-of-theory" },
+  { callout: "Confused by Marketing? Generate Your 100% Beginner-Friendly 7-Day Marketing Plan Instantly—No Experience Needed!", name: "for-beginners" },
+  { callout: "Tired of Generic Advice? Discover a Step-by-Step Marketing Strategy Built for Your Business, Budget, and Audience—Free for Your First 7 Days!", name: "zero-marketing-exp" },
+  { callout: "Can a Marketing Beginner Get Results on a $10 Budget? Announcing Your Personalized 30-Day Plan—Proven to Deliver, Even If You’ve Never Marketed Before!", name: "first-time-founders" },
+  { callout: "Why Struggle Alone? Instantly Access Actionable Marketing Plans That Research Where Your Customers Really Hang Out—Free for Founders & Solopreneurs!", name: "new-to-marketing" },
+  { callout: "Stop Guessing. Get a Custom Marketing Roadmap That Updates Every Month—No Agency Required, No Stress, No ‘One-Size-Fits-All’ Advice.", name: "tired-of-theory" },
   { description: "You’re going to find rough edges. LaunchPrint is in early days, which means some things might be clunky, a few templates are basic, and—yes—sometimes you’ll be the one spotting a bug before we do.", name: "rough-edges" },
   { description: "Because we’re new, we don’t have a thousand case studies yet. You might be taking a leap with us—but that means your feedback shapes the product more than with any “big name.”", name: "we-don-t-have-a-thousand" },
   { description: "Finally, a Marketing Strategy You’ll Understand and Use --an Action Plan That Won’t Waste Your Time or Money", name: "strategy-you-ll-understand" },
@@ -164,17 +164,15 @@ export default function Hero() {
           {COMPANY_NAME}
         </div>
 
-        <h1 className="text-4xl md:text-5xl font-bold text-start mb-4 text-[var(--primary)]">
+        <h1 className="text-4xl md:text-4xl font-bold text-start mb-4 text-[var(--primary)]">
           {selectedCallout?.callout || copywriting.find(c => c.callout)?.callout || ''}
         </h1>
-        <h2 className="text-xl text-start text-[var(--muted)] mb-8">
-          {selectedDescription?.description || copywriting.find(c => c.description)?.description || ''}
-        </h2>
+
         </div>
 
         <div className='w-full max-w-2xl content-center p-4'>
           <h2 className='text-lg font-medium text-center mb-4 text-[var(--muted)]'>
-            You can Start Here with a 7 day free To-Do
+            You can Start Here with a 7 day free To-Do Strategy
           </h2>
           {/* Right column content area: CTA, loader, or chat */}
           {!formSubmitted && !showForm && (
@@ -189,7 +187,7 @@ export default function Hero() {
               <div className="flex gap-4 w-full max-w-lg">
                 <Link
                   href="/handler/sign-in"
-                  className="btn-square flex-1 text-center text-sm"
+                  className="btn-square flex-1 text-center content-center text-sm"
                   passHref
                   data-umami-event="sign-in-button-LP"
                 >
