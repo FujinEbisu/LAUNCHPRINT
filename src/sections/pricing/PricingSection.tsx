@@ -97,7 +97,8 @@ export function PricingSection({}: PricingSectionProps) {
             yearlyPriceId: undefined,
             description: `Not sure? Start free. You can always upgrade when you're making money from the strategies.`,
             features: [
-              '1 marketing strategy per month'
+              '1 marketing strategy per month',
+              'No marketing storage: you loose your strategie after closing modal or refreshing',
             ] as Array<string | { name: string }>,
             popular: false,
             buttonText: 'Create an account',
