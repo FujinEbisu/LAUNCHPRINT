@@ -32,7 +32,13 @@ export async function POST(req: NextRequest) {
   for (const u of filtered) {
     const sub = subByUser.get(u.id)
     const plan = classifyPlan(sub?.stripePriceId)
-    const r = await sendTemplate(u.email, templateName, { plan, priceMap }, u.id, { key: `${templateName}_${u.email}` })
+    const r = await sendTemplate(
+      u.email,
+      templateName,
+      { name: u.name, plan, priceMap },
+      u.id,
+      { key: `${templateName}_${u.email}` }
+    )
     results.push(r)
   }
 

@@ -63,6 +63,38 @@ export async function syncUserToNeonDB(stackUserId: string): Promise<void> {
 
       // Ensure user has a free tier subscription using centralized manager
       await ensureUserHasSubscription(stackUser.id);
+
+        // Trigger welcome email and drip sequence
+        const { sendTemplate, createDripSchedule } = await import('@/lib/mailer');
+        try {
+          await sendTemplate(
+            userEmail,
+            'welcome',
+            { plan: 'free', priceMap: { starterMonthly: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID, proMonthly: process.env.STRIPE_PRO_MONTHLY_PRICE_ID } },
+            stackUser.id,
+            { key: `welcome_${userEmail}` }
+          );
+          // Trigger indoctrination1 email
+          await sendTemplate(
+            userEmail,
+            'indoctrination1',
+            { name: stackUser.displayName || userEmail.split('@')[0] || 'Unknown' },
+            stackUser.id,
+            { key: `indoctrination1_${userEmail}` }
+          );
+          // Trigger subscriptionActive email (handles free tier)
+          await sendTemplate(
+            userEmail,
+            'subscriptionActive',
+            { plan: 'free', previous: undefined, priceMap: { starterMonthly: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID, proMonthly: process.env.STRIPE_PRO_MONTHLY_PRICE_ID } },
+            stackUser.id,
+            { key: `subscriptionActive_${userEmail}` }
+          );
+          await createDripSchedule(stackUser.id, new Date());
+          // Future: Add more sequential email triggers here as needed
+        } catch (e) {
+          console.error('Error sending welcome/drip emails:', e);
+        }
     }
   } catch (error) {
     console.error(`Error syncing user ${stackUserId}:`, error);

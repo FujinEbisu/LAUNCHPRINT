@@ -31,8 +31,8 @@ function upsell(plan: Plan, priceMap: { starterMonthly?: string; proMonthly?: st
       <div style='font-weight:700;font-size:18px;margin-bottom:8px'>Upgrade & Unlock More</div>
       <div style='margin-bottom:12px'>Starter: 25 strategies/mo. Pro: 75 strategies/mo + data retention.</div>
       <div>
-        <a href="${priceMap.starterMonthly ? upgradeLink('starter', priceMap.starterMonthly) : '#'}" style='display:inline-block;margin-right:12px;background:#000;color:#fff;padding:10px 16px;text-decoration:none;font-weight:600;border:2px solid #000'>Starter →</a>
-        <a href="${priceMap.proMonthly ? upgradeLink('pro', priceMap.proMonthly) : '#'}" style='display:inline-block;background:#fff;color:#000;padding:10px 16px;text-decoration:none;font-weight:600;border:2px solid #000'>Pro →</a>
+  <a href="${priceMap.starterMonthly ? upgradeLink('starter', priceMap.starterMonthly) : '#'}" target="_blank" rel="noopener noreferrer" style='display:inline-block;margin-right:12px;background:#000;color:#fff;padding:10px 16px;text-decoration:none;font-weight:600;border:2px solid #000'>Starter →</a>
+  <a href="${priceMap.proMonthly ? upgradeLink('pro', priceMap.proMonthly) : '#'}" target="_blank" rel="noopener noreferrer" style='display:inline-block;background:#fff;color:#000;padding:10px 16px;text-decoration:none;font-weight:600;border:2px solid #000'>Pro →</a>
       </div>
     </div>`)
   } else if (plan === 'starter') {
@@ -40,7 +40,7 @@ function upsell(plan: Plan, priceMap: { starterMonthly?: string; proMonthly?: st
       <div style='font-weight:700;font-size:18px;margin-bottom:8px'>Go Pro</div>
       <div style='margin-bottom:12px'>Pro: 75 strategies/mo + advanced retention.</div>
       <div>
-        <a href="${priceMap.proMonthly ? upgradeLink('pro', priceMap.proMonthly) : '#'}" style='display:inline-block;background:#000;color:#fff;padding:10px 16px;text-decoration:none;font-weight:600;border:2px solid #000'>Upgrade to Pro →</a>
+  <a href="${priceMap.proMonthly ? upgradeLink('pro', priceMap.proMonthly) : '#'}" target="_blank" rel="noopener noreferrer" style='display:inline-block;background:#000;color:#fff;padding:10px 16px;text-decoration:none;font-weight:600;border:2px solid #000'>Upgrade to Pro →</a>
       </div>
     </div>`)
   }
@@ -53,10 +53,32 @@ function upgradeLink(tier: string, priceId: string) {
 
 // Individual template builders
 export const templates = {
+  indoctrination1: (ctx: { name?: string }): TemplateResult => {
+    const subject = 'Welcome to LaunchPrint!'
+  const htmlBody = `<tr><td style='font-size:16px'>Hey ${ctx.name || 'there'},<br/><br/>Welcome to LaunchPrint! We're excited to have you join our community.<br/><br/>Our story began with a simple idea: help creators launch faster and smarter. We believe momentum beats perfection, and every strategy shipped is a step forward.<br/><br/>In the coming days, you'll get tips, stories, and proven tactics to help you build and grow.<br/><br/><strong>What to expect:</strong><ul><li>Actionable strategies</li><li>Customer success stories</li><li>Exclusive offers</li></ul><br/>Ready to get started? <a href='https://launchprint.com' style='color: var(--accent);font-weight:600'>Create your first strategy →</a><br/><br/>Join our Discord: <a href='https://discord.gg/hKerXV7E' style='color: var(--accent);font-weight:600'>Join NOW !</a></td></tr>`
+    return { subject, html: layout(subject, htmlBody), text: 'Welcome to LaunchPrint! Our story, what to expect, and your first step.' }
+  },
   welcome: (ctx: { name?: string; plan: Plan; priceMap: Record<string,string|undefined> }): TemplateResult => {
-    const subject = `Welcome to ${BRAND.name}`
-    const htmlBody = `<tr><td style='font-size:16px'>Hey ${ctx.name || 'there'},<br/><br/>You just created your account. Generate your first strategy today – momentum beats perfection.<br/><br/>${upsell(ctx.plan, ctx.priceMap)}</td></tr>`
-    return { subject, html: layout(subject, htmlBody), text: 'Welcome to LaunchPrint.' }
+    const subject = `Welcome to ${BRAND.name}—Let\'s Make Your First Lead Real`
+    const htmlBody = `<tr><td><h2 style='font-size:22px;font-weight:700'>Welcome to ${BRAND.name}—Let${'&apos;'}s Make Your First Lead Real</h2>
+    <p style='font-size:16px'>
+      Hey ${ctx.name || 'there'},<br /><br />
+      You did it. You took the one step most people never will: you started.<br /><br />
+      Don${'&apos;'}t worry, you${'&apos;'}re not alone. If you feel lost, overwhelmed, or just sick of fake gurus promising magic tricks, you${'&apos;'}re exactly who I built ${BRAND.name} for.<br /><br />
+      I know what it${'&apos;'}s like to sit on the other side of the screen—questioning every move, wasting time on marketing &ldquo;hacks,&rdquo; and stalling because you don${'&apos;'}t know who to ask. That${'&apos;'}s over now.<br /><br />
+      <strong>Here${'&apos;'}s what happens next:</strong><br /><br />
+      Head over to your profile and fire up the Strategy Generator.<br />
+      Just answer a few real-world questions about your business (don${'&apos;'}t overthink it—I${'&apos;'}ve made it super simple). Out comes your personalized plan: daily tasks that build momentum and get you in front of real customers. You${'&apos;'}ll have your first lead—and a whole lot more confidence—before you know it.<br /><br />
+      <strong>Why does it work?</strong><br />
+      Because I turned real failure into a framework that doesn${'&apos;'}t need marketing talent, just action. If I could do it from zero, you can too.<br /><br />
+      If anything trips you up, reply to this email (I read every message) or join the comunity on Discord.<br /><br />
+  <a href='https://launchprint.com' style='color:${BRAND.accent};font-weight:600;text-decoration:underline'>Go to Launch-Print →</a><br /><br />
+      Let${'&apos;'}s do this—together.<br /><br />
+      <strong>PS:</strong><br />
+      Check your profile now. Your first plan is waiting, and your future customers aren${'&apos;'}t going to wait forever.
+    </p>
+    ${upsell(ctx.plan, ctx.priceMap)}</td></tr>`
+    return { subject, html: layout(subject, htmlBody), text: subject }
   },
   subscriptionActive: (ctx: { plan: Plan; previous?: Plan; price?: string; priceMap: Record<string,string|undefined> }): TemplateResult => {
     const subject = ctx.previous && ctx.previous !== ctx.plan ? `Plan updated: ${ctx.previous} → ${ctx.plan}` : `Your ${ctx.plan} plan is active`
@@ -136,7 +158,7 @@ export function dripTemplate(dayIndex: number, ctx: { plan: Plan; priceMap: Reco
         <li>Channel (where they already hang out?)</li>
       </ol>
       <p style='margin:0 0 16px 0'>That’s the minimum viable strategy. Refine after you see first signal.</p>
-      <p style='margin:0 0 16px 0'><a href='${appUrl}' style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Create it now →</a></p>
+  <p style='margin:0 0 16px 0'><a href='${appUrl}' target="_blank" rel="noopener noreferrer" style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Create it now →</a></p>
       <p style='margin:24px 0 0 0;font-size:14px'>PS: Tomorrow I’ll show you how “paralysis” silently taxes growth and how to dodge it.</p>
     `
     text = 'Draft first strategy: audience, outcome, channel. Ship a rough version today. CTA: create it now.'
@@ -145,7 +167,7 @@ export function dripTemplate(dayIndex: number, ctx: { plan: Plan; priceMap: Reco
       <p style='margin:0 0 16px 0;font-size:16px'><strong>Paralysis Tax:</strong> Every day you hesitate you lose compounding signal. No data = no refinement. That’s the hidden tax.</p>
       <p style='margin:0 0 16px 0'>Beat it with the <strong>15/5 loop</strong>: 15 minutes drafting / shipping, 5 minutes reviewing metrics. That rhythm outperforms "deep planning" because the market edits you faster than you can edit yourself.</p>
       <p style='margin:0 0 16px 0'><strong>Do this now:</strong> Reopen yesterday’s strategy, add ONE distribution bullet, hit publish.</p>
-      <p style='margin:0 0 16px 0'><a href='${appUrl}' style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Add distribution →</a></p>
+  <p style='margin:0 0 16px 0'><a href='${appUrl}' target="_blank" rel="noopener noreferrer" style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Add distribution →</a></p>
       <p style='margin:24px 0 0 0;font-size:14px'>PS: Next email: a real user’s "starter to first traction" pattern you can copy.</p>
     `
     text = 'Beat paralysis with 15/5 loop. Reopen yesterday’s strategy and add one distribution bullet. CTA: Add distribution.'
@@ -154,7 +176,7 @@ export function dripTemplate(dayIndex: number, ctx: { plan: Plan; priceMap: Reco
       <p style='margin:0 0 16px 0;font-size:16px'><strong>Starter Win Pattern:</strong> Narrow micro‑niche → repeated micro‑asset → simple follow‑up.</p>
       <p style='margin:0 0 16px 0'><strong>Example:</strong> Indie AI tutors → daily 120‑word “lesson gap” post → DM script offering a free fix call. 11 posts → 3 calls → 1 paying user → proof to expand.</p>
       <p style='margin:0 0 16px 0'><strong>Your turn:</strong> Define your micro‑niche in 8 words. Outline the repeatable asset (format + frequency). Draft the first one now.</p>
-      <p style='margin:0 0 16px 0'><a href='${appUrl}' style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Draft first micro‑asset →</a></p>
+  <p style='margin:0 0 16px 0'><a href='${appUrl}' target="_blank" rel="noopener noreferrer" style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Draft first micro‑asset →</a></p>
       <p style='margin:24px 0 0 0;font-size:14px'>PS: Tomorrow: the 5‑minute time box that keeps you publishing when you’re slammed.</p>
     `
     text = 'Pattern: micro-niche → repeatable asset → simple follow-up. Define niche + asset, draft first piece now.'
@@ -164,7 +186,7 @@ export function dripTemplate(dayIndex: number, ctx: { plan: Plan; priceMap: Reco
       <p style='margin:0 0 16px 0'>Set a 5‑minute timer. Write ONLY the problem line + one actionable step. Ship it. That’s a publishable micro‑asset. Depth comes from repetition, not one marathon session.</p>
       <p style='margin:0 0 16px 0'><strong>Template:</strong><br/>Problem: “{Specific pain sentence}”<br/>Action: “Do {single step} to unlock {micro result}.”</p>
       <p style='margin:0 0 16px 0'><strong>Now:</strong> Produce one using the template and push it live.</p>
-      <p style='margin:0 0 16px 0'><a href='${appUrl}' style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Ship 5‑min asset →</a></p>
+  <p style='margin:0 0 16px 0'><a href='${appUrl}' target="_blank" rel="noopener noreferrer" style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Ship 5‑min asset →</a></p>
       <p style='margin:24px 0 0 0;font-size:14px'>PS: Coming up: picking the right channel in 5 minutes.</p>
     `
     text = 'Use 5-minute frame: problem line + one action. Ship one micro-asset now.'
@@ -179,7 +201,7 @@ export function dripTemplate(dayIndex: number, ctx: { plan: Plan; priceMap: Reco
       </ol>
       <p style='margin:0 0 16px 0'>Score your top 2–3 options 1–5 on each. Highest total wins. Commit. Eliminate the rest for now.</p>
       <p style='margin:0 0 16px 0'><strong>Action:</strong> Run the 3-metric score, lock a channel, update your strategy doc to reflect it.</p>
-      <p style='margin:0 0 16px 0'><a href='${appUrl}' style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Lock channel →</a></p>
+  <p style='margin:0 0 16px 0'><a href='${appUrl}' target="_blank" rel="noopener noreferrer" style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Lock channel →</a></p>
       <p style='margin:24px 0 0 0;font-size:14px'>PS: Tomorrow: an expansion example once first traction hits.</p>
     `
     text = 'Score channels (density, feedback speed, reusability), pick one, update strategy.'
@@ -194,7 +216,7 @@ export function dripTemplate(dayIndex: number, ctx: { plan: Plan; priceMap: Reco
         <li>Follow-up: DM or email sequence to engaged engagers.</li>
       </ul>
       <p style='margin:0 0 16px 0'><strong>Action:</strong> Identify your top performing micro‑asset last 7 days. Choose ONE layer to attach. Schedule its first instance now.</p>
-      <p style='margin:0 0 16px 0'><a href='${appUrl}' style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Add scale layer →</a></p>
+  <p style='margin:0 0 16px 0'><a href='${appUrl}' target="_blank" rel="noopener noreferrer" style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Add scale layer →</a></p>
       <p style='margin:24px 0 0 0;font-size:14px'>PS: Next: Will this even work in your niche? Quick validation check.</p>
     `
     text = 'Pick one scale layer (repurpose, depth, follow-up) for top asset and schedule it.'
@@ -209,7 +231,7 @@ export function dripTemplate(dayIndex: number, ctx: { plan: Plan; priceMap: Reco
       </ol>
       <p style='margin:0 0 16px 0'>2 of 3 = promising; 3 of 3 = double down; 0–1 = adjust niche specificity or problem wording before adding volume.</p>
       <p style='margin:0 0 16px 0'><strong>Action:</strong> Instrument a simple tally (even a note) for this week’s outputs.</p>
-      <p style='margin:0 0 16px 0'><a href='${appUrl}' style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Track triad →</a></p>
+  <p style='margin:0 0 16px 0'><a href='${appUrl}' target="_blank" rel="noopener noreferrer" style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Track triad →</a></p>
       <p style='margin:24px 0 0 0;font-size:14px'>PS: Tomorrow: measuring momentum itself.</p>
     `
     text = 'Use Signal Triad (engagement, depth response, conversion) to validate niche; track today.'
@@ -219,7 +241,7 @@ export function dripTemplate(dayIndex: number, ctx: { plan: Plan; priceMap: Reco
       <p style='margin:0 0 16px 0'>Score each day (0–3) on three inputs: <strong>Shipping</strong> (did something publish), <strong>Learning</strong> (did you review data), <strong>Adjustment</strong> (did you change one element). Max daily = 9.</p>
       <p style='margin:0 0 16px 0'><strong>Interpretation:</strong><br/>45–63/wk (avg 6–9): You’re compounding.<br/>27–44: Inconsistent – tighten your daily ritual.<br/>&lt;27: You’re ideating more than operating.</p>
       <p style='margin:0 0 16px 0'><strong>Action:</strong> Backfill last 3 days from memory. Start today’s log.</p>
-      <p style='margin:0 0 16px 0'><a href='${appUrl}' style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Log momentum →</a></p>
+  <p style='margin:0 0 16px 0'><a href='${appUrl}' target="_blank" rel="noopener noreferrer" style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Log momentum →</a></p>
       <p style='margin:24px 0 0 0;font-size:14px'>PS: Upcoming: the silent cost of waiting (and how to neutralize it).</p>
     `
     text = 'Score shipping/learning/adjustment daily; backfill 3 days and start log.'
@@ -229,7 +251,7 @@ export function dripTemplate(dayIndex: number, ctx: { plan: Plan; priceMap: Reco
       <p style='margin:0 0 16px 0'>Delay = losing calibration cycles. Each unpublished day pushes back the date you reach a working repeatable loop. Treat each micro‑asset as a calibration ticket.</p>
       <p style='margin:0 0 16px 0'><strong>Mini Audit:</strong> Count unpublished drafts sitting idle. Either delete (not core) or ship (core). Reduce queue to &lt;=2.</p>
       <p style='margin:0 0 16px 0'><strong>Action:</strong> Clear the queue right now – ship or scrap.</p>
-      <p style='margin:0 0 16px 0'><a href='${appUrl}' style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Clear backlog →</a></p>
+  <p style='margin:0 0 16px 0'><a href='${appUrl}' target="_blank" rel="noopener noreferrer" style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Clear backlog →</a></p>
       <p style='margin:24px 0 0 0;font-size:14px'>PS: Soon: feature spotlight that multiplies follow‑ups.</p>
     `
     text = 'Audit idle drafts; ship or delete to keep queue <=2 and regain calibration speed.'
@@ -244,7 +266,7 @@ export function dripTemplate(dayIndex: number, ctx: { plan: Plan; priceMap: Reco
         <li>Queue one next action asset per stage.</li>
       </ul>
       <p style='margin:0 0 16px 0'><strong>Action:</strong> Implement the loop for at least 3 engaged users right now.</p>
-      <p style='margin:0 0 16px 0'><a href='${appUrl}' style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Activate follow‑ups →</a></p>
+  <p style='margin:0 0 16px 0'><a href='${appUrl}' target="_blank" rel="noopener noreferrer" style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Activate follow‑ups →</a></p>
       <p style='margin:24px 0 0 0;font-size:14px'>PS: Final decision email coming: commit or drift.</p>
     `
     text = 'Implement follow-up loop: tag engaged users, queue one next asset each.'
@@ -255,7 +277,7 @@ export function dripTemplate(dayIndex: number, ctx: { plan: Plan; priceMap: Reco
       <p style='margin:0 0 16px 0'><strong>If compounding:</strong> Lock a 30‑day commitment (daily micro‑asset or 3x/week depth). Calendar it.</p>
       <p style='margin:0 0 16px 0'><strong>If drifting:</strong> Pick the smallest sustainable cadence (even 2x/week) and protect it ruthlessly.</p>
       <p style='margin:0 0 16px 0'><strong>Action:</strong> Set the next 30 days schedule block now inside your system.</p>
-      <p style='margin:0 0 16px 0'><a href='${appUrl}' style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Lock 30‑day calendar →</a></p>
+  <p style='margin:0 0 16px 0'><a href='${appUrl}' target="_blank" rel="noopener noreferrer" style='background:#000;color:#fff;text-decoration:none;padding:10px 18px;border:2px solid #000;font-weight:600;display:inline-block'>Lock 30‑day calendar →</a></p>
       <p style='margin:24px 0 0 0;font-size:14px'>PS: Need more headroom? Upgrade unlocks higher strategy quota & retention.</p>
     `
     text = 'Set 30-day publishing cadence now (daily or minimal sustainable) to avoid drift.'

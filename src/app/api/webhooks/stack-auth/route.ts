@@ -13,7 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/neon';
 import { users, subscriptions } from '@/lib/schema';
-import { createDripSchedule, sendTemplate } from '@/lib/mailer';
+// import { createDripSchedule, sendTemplate } from '@/lib/mailer';
 import { eq } from 'drizzle-orm';
 
 interface StackAuthUser {
@@ -82,13 +82,7 @@ async function handleUserCreated(userData: StackAuthUser) {
     // Create Free tier subscription for new user
     await createFreeTierSubscription(userData.id);
 
-    // Send welcome email + create drip schedule
-    try {
-      await sendTemplate(userData.primaryEmail, 'welcome', { plan: 'free', priceMap: { starterMonthly: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID, proMonthly: process.env.STRIPE_PRO_MONTHLY_PRICE_ID } }, userData.id, { key: `welcome_${userData.primaryEmail}` })
-      await createDripSchedule(userData.id, new Date())
-    } catch (e) {
-      console.error('Error sending welcome / scheduling drip:', e)
-    }
+  // Email logic removed: welcome email and drip schedule should be triggered systematically after Neon user creation, not via Stack Auth webhook.
 
   } catch (error) {
     console.error('Error creating user in Neon DB:', error);
