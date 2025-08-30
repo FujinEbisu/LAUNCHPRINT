@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@stackframe/stack';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface Strategy {
   id: number;
@@ -109,12 +110,9 @@ export default function UserStrategiesPage() {
               All your saved marketing strategies in one place
             </p>
           </div>
-          <button
-            onClick={() => router.push('/user-profiles')}
-            className="btn-square w-full sm:w-auto"
-          >
+          <Link href="/user-profiles" className="btn-square w-full sm:w-auto">
             Back to Profile
-          </button>
+          </Link>
         </div>
 
         {error && (
@@ -129,12 +127,12 @@ export default function UserStrategiesPage() {
             <p className="text-muted-foreground mb-6">
               You haven&apos;t created any marketing strategies yet. Start by generating your first strategy!
             </p>
-            <button
-              onClick={() => router.push('/user-profiles')}
+            <Link
+              href="/user-profiles"
               className="btn-square-accent"
             >
               Create Your First Strategy
-            </button>
+            </Link>
           </div>
         ) : (
           <div className="grid gap-6">
@@ -167,12 +165,12 @@ export default function UserStrategiesPage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-2 justify-end">
-                  <button
-                    onClick={() => handleViewStrategy(strategy.id)}
+                  <Link
+                    href={`/user-profiles/strategies/${strategy.id}`}
                     className="btn-square text-sm w-full sm:w-auto"
                   >
                     View Full Strategy
-                  </button>
+                  </Link>
                   <button
                     onClick={() => copyToClipboard(strategy.strategy)}
                     className="btn-square text-sm w-full sm:w-auto"
@@ -195,12 +193,12 @@ export default function UserStrategiesPage() {
 
         {strategies.length > 0 && (
           <div className="mt-8 text-center">
-            <button
-              onClick={() => router.push('/user-profiles')}
+            <Link
+              href="/user-profiles"
               className="btn-square-accent"
             >
               Create New Strategy
-            </button>
+            </Link>
           </div>
         )}
       </div>

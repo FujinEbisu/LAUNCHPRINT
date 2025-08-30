@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@stackframe/stack';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 
 interface Strategy {
   id: number;
@@ -112,18 +113,18 @@ export default function ViewStrategyPage() {
             <h3 className="text-xl font-bold text-red-600 mb-4">Error</h3>
             <p className="text-muted-foreground mb-6">{error}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => router.push('/user-profiles/strategies')}
+              <Link
+                href="/user-profiles/strategies"
                 className="btn-square w-full sm:w-auto"
               >
                 Back to Strategies
-              </button>
-              <button
-                onClick={() => router.push('/user-profiles')}
+              </Link>
+              <Link
+                href="/user-profiles"
                 className="btn-square-accent w-full sm:w-auto"
               >
                 Back to Profile
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -143,12 +144,12 @@ export default function ViewStrategyPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <button
-                onClick={() => router.push('/user-profiles/strategies')}
+              <Link
+                href="/user-profiles/strategies"
                 className="btn-square w-full sm:w-auto"
               >
                 Back to Library
-              </button>
+              </Link>
               <button
                 onClick={copyToClipboard}
                 className="btn-square w-full sm:w-auto"

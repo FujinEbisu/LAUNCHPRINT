@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { Check, Zap } from 'lucide-react'
 import { loadStripe } from '@stripe/stripe-js'
 import { useUser } from '@stackframe/stack'
+import Link from 'next/link'
 
 interface PricingSectionProps {
   customerId?: string
@@ -208,13 +209,9 @@ export function PricingSection({}: PricingSectionProps) {
         )}
         {/* Back Button */}
         <div className="mb-8">
-          <button
-            onClick={() => window.location.href = '/'}
-            className="btn-square w-full max-w-xs text-lg py-3"
-            data-umami-event="back-to-home-button-pricing"
-          >
+          <Link href="/" className="btn-square inline-flex items-center text-base md:text-lg">
             ← Back Home
-          </button>
+          </Link>
         </div>
 
         {/* Header */}

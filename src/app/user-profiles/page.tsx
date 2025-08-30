@@ -10,6 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@stackframe/stack';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface TierInfo {
   name: string;
@@ -307,15 +308,14 @@ bullets: [
     try {
       // Show loader, then redirect to sign out handler
       await new Promise(resolve => setTimeout(resolve, 1200)); // Simulate network delay for UX
-      window.location.href = '/handler/sign-out';
       // If sign out handler returns, fallback to home
       setTimeout(() => {
-        window.location.href = '/';
+        router.push('/');
       }, 3000);
     } catch (error) {
       setIsSigningOut(false);
       console.error('Logout error:', error);
-      window.location.href = '/';
+      router.push('/');
     }
   };
 
@@ -687,12 +687,9 @@ bullets: [
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">
         <div className="text-center">
           <p className="text-black mb-4 font-medium">{error || 'Failed to load profile'}</p>
-          <button
-            className="btn-square"
-            onClick={() => router.push('/')}
-          >
+          <Link href="/" className="btn-square inline-flex items-center text-base md:text-lg">
             Go Home
-          </button>
+          </Link>
         </div>
       </div>
     );
@@ -840,13 +837,13 @@ bullets: [
               <p className="text-text-[var(--primary)] mb-6">
                 Upgrade to access more areas, advanced strategies, and priority support.
               </p>
-              <button
+              <Link
+                href="/pricing"
                 className="btn-square text-xl px-8 py-4"
-                onClick={() => router.push('/pricing')}
                 data-umami-event="view-pricing-plans-button"
               >
                 View Pricing Plans
-              </button>
+              </Link>
             </div>
           </div>
         )}
@@ -1399,13 +1396,13 @@ bullets: [
               {subscriptionStatus.tierInfo?.name?.toUpperCase()} PLAN
             </div>
 
-            <button
+            <Link
+              href="/pricing"
               className="w-full btn-square text-sm"
-              onClick={() => router.push('/pricing')}
               data-umami-event="upgrade-plan-button"
             >
               Upgrade Plan
-            </button>
+            </Link>
 
             {subscriptionStatus?.hasPaidSubscription && (
               <button
