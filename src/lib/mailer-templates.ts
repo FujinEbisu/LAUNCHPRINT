@@ -55,7 +55,7 @@ function upgradeLink(tier: string, priceId: string) {
 export const templates = {
   indoctrination1: (ctx: { name?: string }): TemplateResult => {
     const subject = 'Welcome to LaunchPrint!'
-  const htmlBody = `<tr><td style='font-size:16px'>Hey ${ctx.name || 'there'},<br/><br/>Welcome to LaunchPrint! We're excited to have you join our community.<br/><br/>Our story began with a simple idea: help creators launch faster and smarter. We believe momentum beats perfection, and every strategy shipped is a step forward.<br/><br/>In the coming days, you'll get tips, stories, and proven tactics to help you build and grow.<br/><br/><strong>What to expect:</strong><ul><li>Actionable strategies</li><li>Customer success stories</li><li>Exclusive offers</li></ul><br/>Ready to get started? <a href='https://launchprint.com' style='color: var(--accent);font-weight:600'>Create your first strategy →</a><br/><br/>Join our Discord: <a href='https://discord.gg/hKerXV7E' style='color: var(--accent);font-weight:600'>Join NOW !</a></td></tr>`
+  const htmlBody = `<tr><td style='font-size:16px'>Hey ${ctx.name || 'there'},<br/><br/>Welcome to LaunchPrint! We're excited to have you join our community.<br/><br/>Our story began with a simple idea: help creators launch faster and smarter. We believe momentum beats perfection, and every strategy shipped is a step forward.<br/><br/>In the coming days, you'll get tips, stories, and proven tactics to help you build and grow.<br/><br/><strong>What to expect:</strong><ul><li>Actionable strategies</li><li>Customer success stories</li><li>Exclusive offers</li></ul><br/>Ready to get started? <a href='https://launch-print.com' style='color: var(--accent);font-weight:600'>Create your first strategy →</a><br/><br/>Join our Discord: <a href='https://discord.gg/hKerXV7E' style='color: var(--accent);font-weight:600'>Join NOW !</a></td></tr>`
     return { subject, html: layout(subject, htmlBody), text: 'Welcome to LaunchPrint! Our story, what to expect, and your first step.' }
   },
   welcome: (ctx: { name?: string; plan: Plan; priceMap: Record<string,string|undefined> }): TemplateResult => {
@@ -72,7 +72,7 @@ export const templates = {
       <strong>Why does it work?</strong><br />
       Because I turned real failure into a framework that doesn${'&apos;'}t need marketing talent, just action. If I could do it from zero, you can too.<br /><br />
       If anything trips you up, reply to this email (I read every message) or join the comunity on Discord.<br /><br />
-  <a href='https://launchprint.com' style='color:${BRAND.accent};font-weight:600;text-decoration:underline'>Go to Launch-Print →</a><br /><br />
+  <a href='https://launch-print.com' style='color:${BRAND.accent};font-weight:600;text-decoration:underline'>Go to Launch-Print →</a><br /><br />
       Let${'&apos;'}s do this—together.<br /><br />
       <strong>PS:</strong><br />
       Check your profile now. Your first plan is waiting, and your future customers aren${'&apos;'}t going to wait forever.
