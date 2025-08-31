@@ -306,12 +306,11 @@ bullets: [
   const handleLogout = async () => {
     setIsSigningOut(true);
     try {
-      // Show loader, then redirect to sign out handler
-      await new Promise(resolve => setTimeout(resolve, 1200)); // Simulate network delay for UX
-      // If sign out handler returns, fallback to home
-      setTimeout(() => {
-        router.push('/');
-      }, 3000);
+      if (user && typeof user.signOut === 'function') {
+        await user.signOut();
+      } else {
+        router.push('/handler/sign-out');
+      }
     } catch (error) {
       setIsSigningOut(false);
       console.error('Logout error:', error);
