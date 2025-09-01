@@ -1,30 +1,34 @@
 import Link from 'next/link';
 
 const posts = [
-	{
-		title: "How I'm Launching SaaS for $0",
-		slug: 'how-im-launching-saas-for-0',
-	},
-	{
-		title: 'Stop Building, Start Selling: How to Test Your SaaS Before You Waste Another Month',
-		slug: 'stop-building-start-selling',
-	},
-	{
-		title: '“Marketing Feels Like Hell”: Honest Survival Guide for Zero-Budget Founders',
-		slug: 'marketing-feels-like-hell',
-	},
-	{
-		title: 'How I Got My First Users When Nobody Knew My Name',
-		slug: 'first-users-nobody-knew-my-name',
-	},
-	{
-		title: 'Proof, Not Perfection: The Unvarnished Path to Your First 10 Sales',
-		slug: 'proof-not-perfection',
-	},
-	{
-		title: 'The One Unfair Advantage Most Beginners Miss (And How to Get It Now)',
-		slug: 'unfair-advantage-beginners-miss',
-	},
+   {
+	   title: "How I'm Launching SaaS for $0",
+	   slug: 'how-im-launching-saas-for-0',
+   },
+   {
+	   title: 'Stop Building, Start Selling: How to Test Your SaaS Before You Waste Another Month',
+	   slug: 'stop-building-start-selling',
+   },
+   {
+	   title: '“Marketing Feels Like Hell”: Honest Survival Guide for Zero-Budget Founders',
+	   slug: 'marketing-feels-like-hell',
+   },
+   {
+	   title: 'How I Got My First Users When Nobody Knew My Name',
+	   slug: 'first-users-nobody-knew-my-name',
+   },
+   {
+	   title: 'Proof, Not Perfection: The Unvarnished Path to Your First 10 Sales',
+	   slug: 'proof-not-perfection',
+   },
+   {
+	   title: 'The One Unfair Advantage Most Beginners Miss (And How to Get It Now)',
+	   slug: 'unfair-advantage-beginners-miss',
+   },
+   {
+	   title: 'Why I Give Away Marketing Plans for Free (And Why It’s the Smartest Business Move I Ever Made)',
+	   slug: 'why-i-give-away-marketing-plans-for-free',
+   },
 ];
 
 export default function BlogPage() {

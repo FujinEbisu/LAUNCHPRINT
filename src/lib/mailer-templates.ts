@@ -126,6 +126,28 @@ export const templates = {
     const htmlBody = `<tr><td style='font-size:16px'>Plan change for ${ctx.email}<br/>From: ${ctx.oldPlan} → ${ctx.newPlan}</td></tr>`
     return { subject, html: layout(subject, htmlBody), text: subject }
   }
+    ,
+    first50Lifetime: (ctx: { name?: string }): TemplateResult => {
+      const subject = 'You’re #50! Claim Your Lifetime 50% Off Starter Plan'
+      const htmlBody = `<tr><td style='font-size:16px'>
+        Hi ${ctx.name || 'Launcher !'},<br/><br/>
+        Thank you—fifty times over!<br/><br/>
+        Seriously, you’re the 50th pioneer on Launch-Print. That means a lot to me, because every single person who signs up proves there are more people like us -willing to try, to build, and to win.<br/><br/>
+        To say thanks, I want to give you something just for being here:<br/><br/>
+        <strong>Your personal code: <span style='background:#FF4306;color:#fff;padding:2px 8px;border-radius:4px;font-weight:700'>FIRST50</span> -good for 50% off the Starter plan, for life.</strong><br/><br/>
+        Just head to the Starter plan checkout, enter your code, and enjoy lifetime access for half the price.<br/><br/>
+        <strong>And here’s some good news:</strong><br/>
+        Because you’re one of the first 50, you get to share this code with a friend or fellow builder. That’s right -100 people, each with a shot at turning action into real results.<br/><br/>
+        <a href='https://launch-print.com/pricing' style='color:${BRAND.accent};font-weight:600;text-decoration:underline'>Ready to level up? Upgrade to Starter →</a><br/><br/>
+        Want to share the code? Just forward this email, and tell them to use <strong>FIRST50</strong> while it lasts.<br/><br/>
+        You made Launch-Print what it is. Thank you for being part of Day One. Let’s build something great.<br/><br/>
+        If you have questions, just hit reply -I’m here.<br/><br/>
+        <strong>PS:</strong><br/>
+        This lifetime code is only good for the first 50 users and their plus-ones. When it’s gone, it’s gone. Don’t wait.
+      </td></tr>`
+      const text = `You’re #50! Claim Your Lifetime 50% Off Starter Plan\n\nHi ${ctx.name || '[username]'},\n\nThank you—fifty times over!\n\nSeriously, you’re the 50th pioneer on Launch-Print. That means a lot to me, because every single person who signs up proves there are more people like us—willing to try, to build, and to win.\n\nTo say thanks, I want to give you something just for being here:\n\nYour personal code: FIRST50—good for 50% off the Starter plan, for life.\n\nJust head to the Starter plan checkout, enter your code, and enjoy lifetime access for half the price.\n\nAnd here’s some good news:\nBecause you’re one of the first 50, you get to share this code with a friend or fellow builder. That’s right—100 people, each with a shot at turning action into real results.\n\nReady to level up? Upgrade to Starter\n\nWant to share the code? Just forward this email, and tell them to use FIRST50 while it lasts.\n\nYou made Launch-Print what it is. Thank you for being part of Day One. Let’s build something great.\n\nIf you have questions, just hit reply—I’m here.\n\nPS:\nThis lifetime code is only good for the first 50 users and their plus-ones. When it’s gone, it’s gone. Don’t wait.`
+      return { subject, html: layout(subject, htmlBody), text }
+    }
 }
 
 // Drip templates day0..13 (simplified placeholders)
